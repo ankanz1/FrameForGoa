@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 220" width="100%" height="100%">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,900&amp;display=swap');
+    .hh-title-text {
+      font-family: 'Bodoni Moda', 'Playfair Display', Didot, 'Bodoni MT Condensed', 'Onyx', serif;
+      font-weight: 900;
+      fill: #facc15;
+      stroke: #000000;
+      stroke-width: 1.5px;
+      stroke-linejoin: round;
+    }
+  </style>
+  <g transform="translate(500, 180) scale(0.65, 1.35) translate(-500, -120)">
+    <text x="500" y="160" text-anchor="middle" class="hh-title-text" font-size="180" textLength="980" lengthAdjust="spacingAndGlyphs">HACKER HOUSE</text>
+  </g>
+</svg>

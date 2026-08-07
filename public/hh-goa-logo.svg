@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 160" width="100%" height="100%">
+  <defs>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="#000000" flood-opacity="0.4"/>
+    </filter>
+  </defs>
+
+  <!-- Yellow Serif HACKER HOUSE stacked or side-by-side text -->
+  <g font-family="Playfair Display, Georgia, serif" font-weight="900" font-size="44" fill="#FACC15" letter-spacing="-0.5">
+    <text x="20" y="55">HACKER</text>
+    <text x="20" y="110">HOUSE</text>
+  </g>
+
+  <!-- Overlaid Pink Devanagari GOA badge -->
+  <g transform="translate(200, 35) rotate(-6)" filter="url(#shadow)">
+    <!-- Pink background pill with border -->
+    <rect x="0" y="0" width="150" height="70" rx="22" fill="#FF2D75" stroke="#FACC15" stroke-width="4"/>
+    <!-- Yellow Devanagari Text गोवा -->
+    <text x="75" y="48" font-family="system-ui, sans-serif" font-weight="900" font-size="36" fill="#FACC15" text-anchor="middle">गोवा</text>
+  </g>
+</svg>

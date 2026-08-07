@@ -1,0 +1,6 @@
+{
+  "name": "HH Goa 2026 Frame Generator",
+  "description": "HH Goa 2026 Profile Picture Frame & Builder Badge Generator. Upload your photo, crop, customize, and generate downloadable graphics or share directly on X.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
