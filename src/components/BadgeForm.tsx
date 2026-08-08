@@ -21,15 +21,15 @@ export const BadgeForm: React.FC<BadgeFormProps> = ({ details, onChange }) => {
   };
 
   return (
-    <div className="bg-[#084f2b] rounded-2xl p-5 shadow-xl space-y-4">
-      <h3 className="font-playfair text-xl font-bold text-[#fef6e4]">
+    <div className="bg-[var(--hh-green)] rounded-2xl p-5 shadow-xl space-y-4">
+      <h3 className="font-playfair text-xl font-bold text-[var(--hh-cream)]">
         2. Builder Details
       </h3>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {/* Full Name */}
         <div>
-          <label className="block text-xs font-mono font-bold text-[#f3c048] mb-1">
+          <label className="block text-xs font-mono font-bold text-[var(--hh-gold)] mb-1">
             FULL NAME / ALIAS
           </label>
           <input
@@ -37,13 +37,13 @@ export const BadgeForm: React.FC<BadgeFormProps> = ({ details, onChange }) => {
             placeholder="e.g. Satoshi Nakamoto"
             value={details.name}
             onChange={(e) => updateField('name', e.target.value)}
-            className="w-full bg-[#08140e] border border-[#1b3d2c] rounded-xl px-3 py-2 text-[#fef6e4] text-sm focus:outline-none focus:border-[#f3c048] transition"
+            className="w-full bg-[var(--hh-ink)] border border-[var(--hh-green-dark)] rounded-xl px-3 py-2 text-[var(--hh-cream)] text-sm focus:outline-none focus:border-[var(--hh-gold)] transition"
           />
         </div>
 
         {/* X Handle */}
         <div>
-          <label className="block text-xs font-mono font-bold text-[#f3c048] mb-1">
+          <label className="block text-xs font-mono font-bold text-[var(--hh-gold)] mb-1">
             X / TWITTER HANDLE
           </label>
           <input
@@ -51,19 +51,19 @@ export const BadgeForm: React.FC<BadgeFormProps> = ({ details, onChange }) => {
             placeholder="e.g. @satoshi"
             value={details.handle}
             onChange={(e) => updateField('handle', e.target.value)}
-            className="w-full bg-[#08140e] border border-[#1b3d2c] rounded-xl px-3 py-2 text-[#fef6e4] text-sm focus:outline-none focus:border-[#f3c048] transition"
+            className="w-full bg-[var(--hh-ink)] border border-[var(--hh-green-dark)] rounded-xl px-3 py-2 text-[var(--hh-cream)] text-sm focus:outline-none focus:border-[var(--hh-gold)] transition"
           />
         </div>
 
         {/* Track / Stack */}
         <div>
-          <label className="block text-xs font-mono font-bold text-[#f3c048] mb-1">
+          <label className="block text-xs font-mono font-bold text-[var(--hh-gold)] mb-1">
             TRACK / TECH STACK
           </label>
           <select
             value={details.track}
             onChange={(e) => updateField('track', e.target.value)}
-            className="w-full bg-[#08140e] border border-[#1b3d2c] rounded-xl px-3 py-2 text-[#fef6e4] text-sm focus:outline-none focus:border-[#f3c048] transition"
+            className="w-full bg-[var(--hh-ink)] border border-[var(--hh-green-dark)] rounded-xl px-3 py-2 text-[var(--hh-cream)] text-sm focus:outline-none focus:border-[var(--hh-gold)] transition"
           >
             <option value="AI & Agents">AI & Agents</option>
             <option value="Full-Stack Web3">Full-Stack Web3</option>
@@ -76,7 +76,7 @@ export const BadgeForm: React.FC<BadgeFormProps> = ({ details, onChange }) => {
 
         {/* Role */}
         <div>
-          <label className="block text-xs font-mono font-bold text-[#f3c048] mb-1">
+          <label className="block text-xs font-mono font-bold text-[var(--hh-gold)] mb-1">
             PRIMARY ROLE
           </label>
           <input
@@ -84,14 +84,14 @@ export const BadgeForm: React.FC<BadgeFormProps> = ({ details, onChange }) => {
             placeholder="e.g. Hacker / Founder"
             value={details.role}
             onChange={(e) => updateField('role', e.target.value)}
-            className="w-full bg-[#08140e] border border-[#1b3d2c] rounded-xl px-3 py-2 text-[#fef6e4] text-sm focus:outline-none focus:border-[#f3c048] transition"
+            className="w-full bg-[var(--hh-ink)] border border-[var(--hh-green-dark)] rounded-xl px-3 py-2 text-[var(--hh-cream)] text-sm focus:outline-none focus:border-[var(--hh-gold)] transition"
           />
         </div>
       </div>
 
       {/* Project / Affiliation */}
       <div>
-        <label className="block text-xs font-mono font-bold text-[#f3c048] mb-1">
+        <label className="block text-xs font-mono font-bold text-[var(--hh-gold)] mb-1">
           PROJECT / AFFILIATION
         </label>
         <input
@@ -99,21 +99,21 @@ export const BadgeForm: React.FC<BadgeFormProps> = ({ details, onChange }) => {
           placeholder="e.g. Building Next-Gen AI Agents"
           value={details.company}
           onChange={(e) => updateField('company', e.target.value)}
-          className="w-full bg-[#08140e] border border-[#1b3d2c] rounded-xl px-3 py-2 text-[#fef6e4] text-sm focus:outline-none focus:border-[#f3c048] transition"
+          className="w-full bg-[var(--hh-ink)] border border-[var(--hh-green-dark)] rounded-xl px-3 py-2 text-[var(--hh-cream)] text-sm focus:outline-none focus:border-[var(--hh-gold)] transition"
         />
       </div>
 
       {/* Whimsical Builder Title */}
-      <div className="bg-[#08140e] p-3.5 rounded-xl border border-[#1d4230]">
+      <div className="bg-[var(--hh-ink)] p-3.5 rounded-xl border border-[var(--hh-green-dark)]">
         <div className="flex items-center justify-between mb-1.5">
-          <label className="text-xs font-mono font-bold text-[#ff2d75] flex items-center gap-1.5">
-            <Sparkles className="w-3.5 h-3.5 text-[#ff2d75]" />
+          <label className="text-xs font-mono font-bold text-[var(--hh-pink)] flex items-center gap-1.5">
+            <Sparkles className="w-3.5 h-3.5 text-[var(--hh-pink)]" />
             GOA BUILDER TITLE
           </label>
           <button
             type="button"
             onClick={handleRerollTitle}
-            className="text-xs text-[#f3c048] hover:underline flex items-center gap-1 font-mono cursor-pointer"
+            className="text-xs text-[var(--hh-gold)] hover:underline flex items-center gap-1 font-mono cursor-pointer"
           >
             🎲 Reroll Title
           </button>
@@ -123,7 +123,7 @@ export const BadgeForm: React.FC<BadgeFormProps> = ({ details, onChange }) => {
           type="text"
           value={details.title}
           onChange={(e) => updateField('title', e.target.value)}
-          className="w-full bg-[#0f241a] border border-[#22503a] rounded-lg px-3 py-2 text-[#ff2d75] font-mono text-sm font-semibold focus:outline-none focus:border-[#ff2d75]"
+          className="w-full bg-[var(--hh-green-dark)] border border-[var(--hh-green-dark)] rounded-lg px-3 py-2 text-[var(--hh-pink)] font-mono text-sm font-semibold focus:outline-none focus:border-[var(--hh-pink)]"
         />
       </div>
     </div>

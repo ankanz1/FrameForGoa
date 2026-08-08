@@ -78,7 +78,7 @@ export default function App() {
       particleCount: 80,
       spread: 70,
       origin: { y: 0.6 },
-      colors: ['#f3c048', '#ff2d75', '#ffffff'],
+      colors: ['#f6c81a', '#ff2e93', '#ffffff'],
     });
 
     const link = document.createElement('a');
@@ -134,10 +134,10 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0b6839] text-[#fef6e4] font-body-text pb-16 relative overflow-x-hidden">
+    <div className="min-h-screen bg-[var(--hh-green)] text-[var(--hh-cream)] font-body-text pb-16 relative overflow-x-hidden">
       <div className="relative z-10">
         {/* Official HH Goa Hero Banner Section (Full Screen Opening View) */}
-        <section className="bg-[#0b6839] px-4 py-8 sm:py-12 min-h-screen flex flex-col justify-between relative overflow-hidden">
+        <section className="bg-[var(--hh-green)] px-4 py-8 sm:py-12 min-h-screen flex flex-col justify-between relative overflow-hidden">
           <div className="max-w-6xl mx-auto w-full relative z-10 flex flex-col justify-between min-h-screen py-4">
             {/* Integrated Top Bar inside Hero */}
             <div className="flex items-center justify-between">
@@ -178,7 +178,7 @@ export default function App() {
 
               {/* Pink Devanagari "गोवा" Badge Overlaid in Center */}
               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none transform hover:scale-110 transition duration-300">
-                <div className="bg-[#ff2d75] text-[#facc15] font-black text-3xl sm:text-5xl md:text-6xl px-4 py-1.5 sm:px-6 sm:py-2.5 rounded-3xl border-4 border-[#facc15] shadow-2xl rotate-[-6deg] flex items-center justify-center tracking-wider">
+                <div className="bg-[var(--hh-pink)] text-[var(--hh-gold)] font-black text-3xl sm:text-5xl md:text-6xl px-4 py-1.5 sm:px-6 sm:py-2.5 rounded-3xl border-4 border-[var(--hh-gold)] shadow-2xl rotate-[-6deg] flex items-center justify-center tracking-wider">
                   गोवा
                 </div>
               </div>
@@ -193,10 +193,10 @@ export default function App() {
           {/* Interactive Floating Pinned Up Notice Board */}
           <section className="text-center my-auto">
             <div className="inline-block mb-4">
-              <span className="font-mono text-xs font-bold tracking-[0.3em] text-[#facc15] uppercase">
+              <span className="font-mono text-xs font-bold tracking-[0.3em] text-[var(--hh-gold)] uppercase">
                 PINNED UP
               </span>
-              <h3 className="font-serif text-3xl sm:text-4xl font-black text-[#fef6e4] tracking-tight uppercase leading-none mt-1">
+              <h3 className="font-serif text-3xl sm:text-4xl font-black text-[var(--hh-cream)] tracking-tight uppercase leading-none mt-1">
                 FrameInGoa
               </h3>
             </div>
@@ -205,30 +205,30 @@ export default function App() {
               {/* Card 1: Circular PFP Frame */}
               <div
                 onClick={() => openStudio('pfp')}
-                className={`group relative bg-[#fffdf0] text-[#1c1917] p-4 sm:p-5 rounded-xl shadow-xl transition-all duration-300 cursor-pointer border-2 ${
+                className={`group relative bg-[var(--hh-cream)] text-[var(--hh-ink)] p-4 sm:p-5 rounded-xl shadow-xl transition-all duration-300 cursor-pointer border-2 ${
                   isStudioOpen && mode === 'pfp'
-                    ? 'border-[#ff2d75] ring-4 ring-[#ff2d75]/30'
-                    : 'border-[#e2e8f0] hover:border-[#facc15]'
+                    ? 'border-[var(--hh-pink)] ring-4 ring-[var(--hh-pink)]/30'
+                    : 'border-[#e2e8f0] hover:border-[var(--hh-gold)]'
                 }`}
               >
                 {/* Fixed Push Pin Anchor */}
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-20 w-6 h-6 rounded-full bg-gradient-to-br from-[#ff528f] via-[#ff2d75] to-[#c7004c] border-2 border-white shadow-[0_4px_10px_rgba(0,0,0,0.5)] flex items-center justify-center">
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-20 w-6 h-6 rounded-full bg-gradient-to-br from-[var(--hh-pink)] via-[var(--hh-pink)] to-[var(--hh-pink)] border-2 border-white shadow-[0_4px_10px_rgba(0,0,0,0.5)] flex items-center justify-center">
                   <div className="w-2 h-2 rounded-full bg-white/90 shadow-inner" />
                   <div className="absolute top-0.5 left-1 w-1 h-1 rounded-full bg-white/60" />
                 </div>
 
                 {/* Active Badge */}
                 {isStudioOpen && mode === 'pfp' && (
-                  <div className="absolute top-2.5 right-2.5 bg-[#ff2d75] text-white font-mono text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider shadow-sm">
+                  <div className="absolute top-2.5 right-2.5 bg-[var(--hh-pink)] text-white font-mono text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider shadow-sm">
                     Active Mode
                   </div>
                 )}
 
                 <div className="text-center pt-2 space-y-2">
-                  <h4 className="font-mono text-sm sm:text-base font-bold leading-snug text-[#0f172a]">
+                  <h4 className="font-mono text-sm sm:text-base font-bold leading-snug text-[var(--hh-ink)]">
                     Task #1 HH Goa Frame / ID Card Generator
                   </h4>
-                  <p className="font-mono text-[11px] text-[#475569] leading-relaxed">
+                  <p className="font-mono text-[11px] text-[var(--hh-ink-muted)] leading-relaxed">
                     Generate circular PFP frame overlay with Goa sunrise graphics for X & LinkedIn.
                   </p>
 
@@ -240,8 +240,8 @@ export default function App() {
                       }}
                       className={`font-serif text-[11px] font-bold px-4 py-2 rounded-full uppercase tracking-wider transition-all duration-200 cursor-pointer shadow-md flex items-center justify-center gap-1.5 mx-auto ${
                         isStudioOpen && mode === 'pfp'
-                          ? 'bg-[#ff2d75] text-white shadow-[#ff2d75]/40 scale-105'
-                          : 'bg-[#facc15] text-[#08140e] hover:bg-[#ff2d75] hover:text-white'
+                          ? 'bg-[var(--hh-pink)] text-white shadow-[var(--hh-pink)]/40 scale-105'
+                          : 'bg-[var(--hh-gold)] text-[var(--hh-ink)] hover:bg-[var(--hh-pink)] hover:text-white'
                       }`}
                     >
                       <span>{isStudioOpen && mode === 'pfp' ? 'PFP STUDIO ACTIVE' : 'OPEN PFP FRAME STUDIO'}</span>
@@ -249,7 +249,7 @@ export default function App() {
                     </button>
                   </div>
 
-                  <div className="font-mono text-[10px] text-[#94a3b8] pt-0.5 uppercase">
+                  <div className="font-mono text-[10px] text-[var(--hh-ink-muted)] pt-0.5 uppercase">
                     AUG 6, 2026 • HH GOA
                   </div>
                 </div>
@@ -258,30 +258,30 @@ export default function App() {
               {/* Card 2: Builder Badge ID */}
               <div
                 onClick={() => openStudio('card')}
-                className={`group relative bg-[#fffdf0] text-[#1c1917] p-4 sm:p-5 rounded-xl shadow-xl transition-all duration-300 cursor-pointer border-2 ${
+                className={`group relative bg-[var(--hh-cream)] text-[var(--hh-ink)] p-4 sm:p-5 rounded-xl shadow-xl transition-all duration-300 cursor-pointer border-2 ${
                   isStudioOpen && mode === 'card'
-                    ? 'border-[#ff2d75] ring-4 ring-[#ff2d75]/30'
-                    : 'border-[#e2e8f0] hover:border-[#facc15]'
+                    ? 'border-[var(--hh-pink)] ring-4 ring-[var(--hh-pink)]/30'
+                    : 'border-[#e2e8f0] hover:border-[var(--hh-gold)]'
                 }`}
               >
                 {/* Fixed Push Pin Anchor */}
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-20 w-6 h-6 rounded-full bg-gradient-to-br from-[#fde047] via-[#facc15] to-[#ca8a04] border-2 border-white shadow-[0_4px_10px_rgba(0,0,0,0.5)] flex items-center justify-center">
-                  <div className="w-2 h-2 rounded-full bg-[#08140e] opacity-80" />
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-20 w-6 h-6 rounded-full bg-gradient-to-br from-[#fde047] via-[var(--hh-gold)] to-[#ca8a04] border-2 border-white shadow-[0_4px_10px_rgba(0,0,0,0.5)] flex items-center justify-center">
+                  <div className="w-2 h-2 rounded-full bg-[var(--hh-ink)] opacity-80" />
                   <div className="absolute top-0.5 left-1 w-1 h-1 rounded-full bg-white/70" />
                 </div>
 
                 {/* Active Badge */}
                 {isStudioOpen && mode === 'card' && (
-                  <div className="absolute top-2.5 right-2.5 bg-[#ff2d75] text-white font-mono text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider shadow-sm">
+                  <div className="absolute top-2.5 right-2.5 bg-[var(--hh-pink)] text-white font-mono text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider shadow-sm">
                     Active Mode
                   </div>
                 )}
 
                 <div className="text-center pt-2 space-y-2">
-                  <h4 className="font-mono text-sm sm:text-base font-bold leading-snug text-[#0f172a]">
+                  <h4 className="font-mono text-sm sm:text-base font-bold leading-snug text-[var(--hh-ink)]">
                     HHGoa'26 : Official Builder Pass ID
                   </h4>
-                  <p className="font-mono text-[11px] text-[#475569] leading-relaxed">
+                  <p className="font-mono text-[11px] text-[var(--hh-ink-muted)] leading-relaxed">
                     Full 800x1100 portrait ID card badge with custom tracks, handle, and QR code.
                   </p>
 
@@ -293,8 +293,8 @@ export default function App() {
                       }}
                       className={`font-serif text-[11px] font-bold px-4 py-2 rounded-full uppercase tracking-wider transition-all duration-200 cursor-pointer shadow-md flex items-center justify-center gap-1.5 mx-auto ${
                         isStudioOpen && mode === 'card'
-                          ? 'bg-[#ff2d75] text-white shadow-[#ff2d75]/40 scale-105'
-                          : 'bg-[#facc15] text-[#08140e] hover:bg-[#ff2d75] hover:text-white'
+                          ? 'bg-[var(--hh-pink)] text-white shadow-[var(--hh-pink)]/40 scale-105'
+                          : 'bg-[var(--hh-gold)] text-[var(--hh-ink)] hover:bg-[var(--hh-pink)] hover:text-white'
                       }`}
                     >
                       <span>{isStudioOpen && mode === 'card' ? 'BUILDER ID ACTIVE' : 'OPEN BUILDER ID STUDIO'}</span>
@@ -302,7 +302,7 @@ export default function App() {
                     </button>
                   </div>
 
-                  <div className="font-mono text-[10px] text-[#94a3b8] pt-0.5 uppercase">
+                  <div className="font-mono text-[10px] text-[var(--hh-ink-muted)] pt-0.5 uppercase">
                     AUG 3, 2026 • HH GOA
                   </div>
                 </div>
@@ -314,25 +314,25 @@ export default function App() {
         {isStudioOpen && (
           <div id="generator-studio" className="mt-8 pt-8 animate-fadeIn">
             {/* Top Navigation Bar inside Studio */}
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-[#084f2b] p-4 rounded-2xl mb-8 shadow-xl">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-[var(--hh-green)] p-4 rounded-2xl mb-8 shadow-xl">
               <button
                 onClick={() => setIsStudioOpen(false)}
-                className="flex items-center gap-2 font-mono text-xs font-bold text-[#facc15] hover:text-white bg-[#063b20] px-4 py-2.5 rounded-xl transition cursor-pointer shadow-md"
+                className="flex items-center gap-2 font-mono text-xs font-bold text-[var(--hh-gold)] hover:text-white bg-[var(--hh-green-dark)] px-4 py-2.5 rounded-xl transition cursor-pointer shadow-md"
               >
                 <ArrowLeft className="w-4 h-4" />
                 ← BACK TO FRAMEINGOA
               </button>
 
-              <div className="flex items-center gap-2 bg-[#063b20] p-1.5 rounded-xl">
+              <div className="flex items-center gap-2 bg-[var(--hh-green-dark)] p-1.5 rounded-xl">
                 <button
                   onClick={() => setMode('pfp')}
                   className={`py-2 px-4 rounded-lg font-mono text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
                     mode === 'pfp'
-                      ? 'bg-[#f3c048] text-[#08140e] shadow-md'
-                      : 'text-[#94a3b8] hover:text-[#fef6e4]'
+                      ? 'bg-[var(--hh-gold)] text-[var(--hh-ink)] shadow-md'
+                      : 'text-[var(--hh-ink-muted)] hover:text-[var(--hh-cream)]'
                   }`}
                 >
-                  <span className="w-2 h-2 rounded-full bg-[#08140e]" />
+                  <span className="w-2 h-2 rounded-full bg-[var(--hh-ink)]" />
                   1. Circular PFP Frame
                 </button>
 
@@ -340,8 +340,8 @@ export default function App() {
                   onClick={() => setMode('card')}
                   className={`py-2 px-4 rounded-lg font-mono text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
                     mode === 'card'
-                      ? 'bg-[#ff2d75] text-white shadow-md'
-                      : 'text-[#94a3b8] hover:text-[#fef6e4]'
+                      ? 'bg-[var(--hh-pink)] text-white shadow-md'
+                      : 'text-[var(--hh-ink-muted)] hover:text-[var(--hh-cream)]'
                   }`}
                 >
                   <Sparkles className="w-3.5 h-3.5" />
@@ -351,7 +351,7 @@ export default function App() {
 
               <button
                 onClick={() => setIsStudioOpen(false)}
-                className="flex items-center gap-1.5 text-xs font-mono font-bold text-[#94a3b8] hover:text-[#ff2d75] transition cursor-pointer"
+                className="flex items-center gap-1.5 text-xs font-mono font-bold text-[var(--hh-ink-muted)] hover:text-[var(--hh-pink)] transition cursor-pointer"
               >
                 <X className="w-4 h-4" /> Close Studio
               </button>
@@ -377,26 +377,26 @@ export default function App() {
 
               {/* Right Column: Live Canvas Preview & Action Buttons */}
               <div className="lg:col-span-6 lg:sticky lg:top-24">
-                <div className="bg-[#084f2b] rounded-2xl p-6 shadow-xl text-center">
+                <div className="bg-[var(--hh-green)] rounded-2xl p-6 shadow-xl text-center">
                   <div className="flex items-center justify-between mb-4 text-left">
                     <div>
-                      <h3 className="font-playfair text-xl font-bold text-[#fef6e4]">
+                      <h3 className="font-playfair text-xl font-bold text-[var(--hh-cream)]">
                         Live Graphic Preview
                       </h3>
-                      <p className="text-xs text-[#cbd5e1] font-mono">
-                        {mode === 'pfp' ? '800 × 800 Square Canvas' : '800 × 1100 Portrait Card'}
+                      <p className="text-xs text-[var(--hh-ink-muted)] font-mono">
+                        {mode === 'pfp' ? '1080 × 1080 Square Canvas' : '1080 × 1350 Portrait Card'}
                       </p>
                     </div>
 
                     {isGenerating && (
-                      <span className="text-xs font-mono text-[#f3c048] flex items-center gap-1.5 animate-pulse">
+                      <span className="text-xs font-mono text-[var(--hh-gold)] flex items-center gap-1.5 animate-pulse">
                         <RefreshCw className="w-3.5 h-3.5 animate-spin" /> Rendering...
                       </span>
                     )}
                   </div>
 
                   {/* Live Canvas Render Container */}
-                  <div className="relative mx-auto max-w-md bg-[#063b20] rounded-xl overflow-hidden p-2 flex items-center justify-center min-h-[340px]">
+                  <div className="relative mx-auto max-w-md bg-[var(--hh-green-dark)] rounded-xl overflow-hidden p-2 flex items-center justify-center min-h-[340px]">
                     {renderedDataUrl ? (
                       <img
                         src={renderedDataUrl}
@@ -404,8 +404,8 @@ export default function App() {
                         className="w-full h-auto max-h-[500px] object-contain rounded-lg shadow-lg"
                       />
                     ) : (
-                      <div className="p-8 text-[#94a3b8]">
-                        <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-[#f3c048] border-t-transparent mb-2" />
+                      <div className="p-8 text-[var(--hh-ink-muted)]">
+                        <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-[var(--hh-gold)] border-t-transparent mb-2" />
                         <p className="text-sm">Generating your frame...</p>
                       </div>
                     )}
@@ -416,7 +416,7 @@ export default function App() {
                     <button
                       onClick={handleDownload}
                       disabled={!renderedDataUrl}
-                      className="w-full sm:flex-1 bg-[#f3c048] hover:bg-[#e2b13b] text-[#08140e] font-bold py-3.5 px-5 rounded-xl transition flex items-center justify-center gap-2 shadow-lg disabled:opacity-50 cursor-pointer text-sm"
+                      className="w-full sm:flex-1 bg-[var(--hh-gold)] hover:bg-[color-mix(in_srgb,var(--hh-gold)_80%,var(--hh-ink))] text-[var(--hh-ink)] font-bold py-3.5 px-5 rounded-xl transition flex items-center justify-center gap-2 shadow-lg disabled:opacity-50 cursor-pointer text-sm"
                     >
                       <Download className="w-4 h-4" />
                       Download PNG
@@ -434,19 +434,19 @@ export default function App() {
 
                   {/* Generated Shareable Link Callout */}
                   {shareUrl && (
-                    <div className="mt-4 bg-[#08140e] border border-[#1b3d2c] p-3 rounded-xl flex items-center justify-between gap-2 text-left">
+                    <div className="mt-4 bg-[var(--hh-ink)] border border-[var(--hh-green-dark)] p-3 rounded-xl flex items-center justify-between gap-2 text-left">
                       <div className="overflow-hidden">
-                        <span className="block text-[10px] font-mono font-bold text-[#f3c048]">
+                        <span className="block text-[10px] font-mono font-bold text-[var(--hh-gold)]">
                           PUBLIC SHARE PREVIEW LINK:
                         </span>
-                        <span className="text-xs text-[#cbd5e1] font-mono truncate block">
+                        <span className="text-xs text-[var(--hh-ink-muted)] font-mono truncate block">
                           {shareUrl}
                         </span>
                       </div>
 
                       <button
                         onClick={handleCopyLink}
-                        className="bg-[#143827] hover:bg-[#1e4d36] text-[#fef6e4] p-2 rounded-lg text-xs font-mono flex items-center gap-1 transition cursor-pointer"
+                        className="bg-[var(--hh-green-dark)] hover:bg-[var(--hh-green-dark)] text-[var(--hh-cream)] p-2 rounded-lg text-xs font-mono flex items-center gap-1 transition cursor-pointer"
                       >
                         {copied ? <Check className="w-4 h-4 text-green-400" /> : <Copy className="w-4 h-4" />}
                       </button>
