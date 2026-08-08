@@ -2,11 +2,12 @@
 
 :root {
   --hh-green: #0b6839;
-  --hh-green-dark: #0b6839;
-  --hh-cream: #f6f3e6;
-  --hh-row-tint: #e9ecdf;
+  --hh-green-dark: #082818;
   --hh-gold: #f6c81a;
-  --hh-pink: #ff2e8f;
+  --hh-pink: #ff2e93;
+  --hh-cream: #f3efe0;
+  --hh-ink: #06180f;
+  --hh-row-tint: #e9ecdf;
   --hh-pink-tint: #fbe6ef;
   --hh-white: #ffffff;
   --hh-ink-muted: #5c6b60;
@@ -15,6 +16,12 @@
   --font-heading: "Poppins", "DM Sans", system-ui, sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, monospace;
   --font-body: "Inter", system-ui, sans-serif;
+}
+
+@theme {
+  --font-display: "Playfair Display", Georgia, serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+  --font-sans: "Inter", system-ui, sans-serif;
 }
 
 @layer utilities {
@@ -51,6 +58,12 @@
   .bg-hh-pink-tint {
     background-color: var(--hh-pink-tint);
   }
+  .bg-hh-ink {
+    background-color: var(--hh-ink);
+  }
+  .bg-hh-white {
+    background-color: var(--hh-white);
+  }
   .text-hh-green {
     color: var(--hh-green);
   }
@@ -60,6 +73,15 @@
   .text-hh-pink {
     color: var(--hh-pink);
   }
+  .text-hh-cream {
+    color: var(--hh-cream);
+  }
+  .text-hh-white {
+    color: var(--hh-white);
+  }
+  .text-hh-ink {
+    color: var(--hh-ink);
+  }
   .text-hh-muted {
     color: var(--hh-ink-muted);
   }
@@ -68,6 +90,15 @@
   }
   .border-hh-gold {
     border-color: var(--hh-gold);
+  }
+  .border-hh-cream {
+    border-color: var(--hh-cream);
+  }
+  .border-hh-green {
+    border-color: var(--hh-green);
+  }
+  .border-hh-ink {
+    border-color: var(--hh-ink);
   }
 }
 
@@ -141,6 +172,95 @@
   color: var(--hh-green-dark);
 }
 
+/* Shared generator theme classes (ported from the Frame/ID generator globals.css) */
+.eyebrow {
+  font-family: var(--font-mono);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.hh-display {
+  font-family: var(--font-display);
+}
+
+/* checkerboard strip, echoes the ticket-style APPLY button on hhgoa.com */
+.hh-checker {
+  height: 10px;
+  background-image: repeating-conic-gradient(
+    var(--hh-gold) 0% 25%,
+    var(--hh-ink) 0% 50%
+  );
+  background-size: 10px 10px;
+}
+
+.hh-btn {
+  font-family: var(--font-mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  background: var(--hh-gold);
+  color: var(--hh-ink);
+  border: 1px solid var(--hh-ink);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.hh-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 3px 4px 0 var(--hh-ink);
+}
+
+.hh-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.hh-btn-outline {
+  font-family: var(--font-mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  background: transparent;
+  color: var(--hh-cream);
+  border: 1px solid var(--hh-cream);
+}
+
+.hh-card {
+  background: var(--hh-green-dark);
+  border: 1px solid rgba(246, 200, 26, 0.25);
+}
+
+.hh-chip {
+  font-family: var(--font-mono);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  border: 1px solid var(--hh-gold);
+  color: var(--hh-gold);
+}
+
+.hh-chip[data-active="true"] {
+  background: var(--hh-gold);
+  color: var(--hh-ink);
+}
+
+.hh-input {
+  background: var(--hh-green);
+  border: 1px solid rgba(243, 239, 224, 0.35);
+  color: var(--hh-cream);
+  font-family: var(--font-body);
+}
+
+.hh-input:focus {
+  outline: 2px solid var(--hh-pink);
+  outline-offset: 1px;
+}
+
+.hh-pink-tag {
+  background: var(--hh-pink);
+  color: var(--hh-cream);
+  font-family: var(--font-mono);
+  letter-spacing: 0.05em;
+}
+
 @keyframes notice-float-1 {
   0%, 100% {
     transform: rotate(-2deg) translateY(0px);
@@ -176,8 +296,8 @@
 
 body {
   font-family: var(--font-body);
-  background-color: var(--hh-green-dark);
-  color: #f1f5f9;
+  background-color: var(--hh-green);
+  color: var(--hh-cream);
   min-height: 100vh;
 }
 

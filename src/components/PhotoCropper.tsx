@@ -146,14 +146,14 @@ export const PhotoCropper: React.FC<PhotoCropperProps> = ({
   };
 
   return (
-    <div className="bg-[#084f2b] rounded-2xl p-5 shadow-xl">
+    <div className="bg-[var(--hh-green)] rounded-2xl p-5 shadow-xl">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="font-playfair text-xl font-bold text-[#fef6e4] flex items-center gap-2">
-          <ImageIcon className="w-5 h-5 text-[#f3c048]" />
+        <h3 className="font-playfair text-xl font-bold text-[var(--hh-cream)] flex items-center gap-2">
+          <ImageIcon className="w-5 h-5 text-[var(--hh-gold)]" />
           1. Photo Upload & Position
         </h3>
 
-        <label className="cursor-pointer bg-[#f3c048] hover:bg-[#e2b13b] text-[#08140e] font-bold px-4 py-2 rounded-xl text-sm transition flex items-center gap-2 shadow-md">
+        <label className="cursor-pointer bg-[var(--hh-gold)] hover:bg-[color-mix(in_srgb,var(--hh-gold)_80%,var(--hh-ink))] text-[var(--hh-ink)] font-bold px-4 py-2 rounded-xl text-sm transition flex items-center gap-2 shadow-md">
           <Upload className="w-4 h-4" />
           {imageSrc ? 'Change Photo' : 'Upload Photo'}
           <input
@@ -172,11 +172,11 @@ export const PhotoCropper: React.FC<PhotoCropperProps> = ({
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
-        className="relative w-full h-72 bg-[#08140e] rounded-xl overflow-hidden border-2 border-dashed border-[#22503a] flex items-center justify-center cursor-grab active:cursor-grabbing select-none"
+        className="relative w-full h-72 bg-[var(--hh-ink)] rounded-xl overflow-hidden border-2 border-dashed border-[var(--hh-green-dark)] flex items-center justify-center cursor-grab active:cursor-grabbing select-none"
       >
         {isLoading ? (
-          <div className="text-center p-6 text-[#94a3b8]">
-            <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-[#f3c048] border-t-transparent mb-2"></div>
+          <div className="text-center p-6 text-[var(--hh-ink-muted)]">
+            <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-[var(--hh-gold)] border-t-transparent mb-2"></div>
             <p className="text-sm">Processing photo...</p>
           </div>
         ) : imageSrc ? (
@@ -200,24 +200,24 @@ export const PhotoCropper: React.FC<PhotoCropperProps> = ({
             />
 
             {/* Target Crop Circle Overlay Guide */}
-            <div className="absolute inset-0 border-2 border-[#f3c048]/50 rounded-full pointer-events-none max-w-[220px] max-h-[220px] m-auto shadow-[0_0_0_9999px_rgba(8,20,14,0.6)]" />
+            <div className="absolute inset-0 border-2 border-[var(--hh-gold)]/50 rounded-full pointer-events-none max-w-[220px] max-h-[220px] m-auto shadow-[0_0_0_9999px_rgba(6,24,15,0.6)]" />
           </div>
         ) : (
           <div className="text-center p-6">
-            <div className="w-16 h-16 bg-[#163627] rounded-full flex items-center justify-center mx-auto mb-3 text-[#f3c048]">
+            <div className="w-16 h-16 bg-[var(--hh-green-dark)] rounded-full flex items-center justify-center mx-auto mb-3 text-[var(--hh-gold)]">
               <Upload className="w-8 h-8" />
             </div>
-            <p className="text-[#fef6e4] font-medium mb-1">Drag & drop or click Upload</p>
-            <p className="text-xs text-[#94a3b8]">Supports JPG, PNG, HEIC from iPhone</p>
+            <p className="text-[var(--hh-cream)] font-medium mb-1">Drag & drop or click Upload</p>
+            <p className="text-xs text-[var(--hh-ink-muted)]">Supports JPG, PNG, HEIC from iPhone</p>
           </div>
         )}
       </div>
 
       {/* Zoom & Reset Controls */}
       {imageSrc && (
-        <div className="flex items-center gap-4 mt-4 bg-[#08140e] p-3 rounded-xl border border-[#1b3d2c]">
-          <div className="flex items-center gap-2 text-xs text-[#94a3b8] font-mono">
-            <ZoomOut className="w-4 h-4 text-[#f3c048]" />
+        <div className="flex items-center gap-4 mt-4 bg-[var(--hh-ink)] p-3 rounded-xl border border-[var(--hh-green-dark)]">
+          <div className="flex items-center gap-2 text-xs text-[var(--hh-ink-muted)] font-mono">
+            <ZoomOut className="w-4 h-4 text-[var(--hh-gold)]" />
             <input
               type="range"
               min="0.8"
@@ -225,14 +225,14 @@ export const PhotoCropper: React.FC<PhotoCropperProps> = ({
               step="0.05"
               value={scale}
               onChange={(e) => setScale(parseFloat(e.target.value))}
-              className="w-32 accent-[#f3c048] cursor-pointer"
+              className="w-32 accent-[var(--hh-gold)] cursor-pointer"
             />
-            <ZoomIn className="w-4 h-4 text-[#f3c048]" />
+            <ZoomIn className="w-4 h-4 text-[var(--hh-gold)]" />
           </div>
 
           <button
             onClick={handleReset}
-            className="ml-auto text-xs text-[#94a3b8] hover:text-[#fef6e4] flex items-center gap-1 bg-[#143827] px-3 py-1.5 rounded-lg transition"
+            className="ml-auto text-xs text-[var(--hh-ink-muted)] hover:text-[var(--hh-cream)] flex items-center gap-1 bg-[var(--hh-green-dark)] px-3 py-1.5 rounded-lg transition"
           >
             <RotateCcw className="w-3.5 h-3.5" /> Reset Position
           </button>
