@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Download, Share2, Sparkles, Check, Twitter, Copy, RefreshCw, ArrowLeft, X } from 'lucide-react';
+import { Download, Share2, Sparkles, Check, Twitter, Copy, RefreshCw, ArrowLeft, X, Menu } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { Mode, BadgeDetails, CropArea } from './types';
 import { drawCanvas } from './lib/canvasDraw';
@@ -32,6 +32,7 @@ export default function App() {
   const [shareUrl, setShareUrl] = useState<string | null>(null);
   const [isSharing, setIsSharing] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [showCardMenu, setShowCardMenu] = useState(false);
 
   const previewCanvasRef = useRef<HTMLCanvasElement | null>(null);
 
@@ -448,44 +449,59 @@ export default function App() {
 
           {/* Full Screen Interactive 3D Card Modal Reveal */}
           {isStudioOpen && mode === 'card' && (
-            <div className="fixed inset-0 z-50 flex flex-col md:flex-row items-center justify-center p-4 md:p-8 backdrop-blur-2xl bg-[#063b20]/80 animate-fadeIn">
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-0 backdrop-blur-2xl bg-[#063b20]/80 animate-fadeIn overflow-hidden">
               
-              {/* Left Side: Action Buttons */}
-              <div className="w-full md:w-1/4 lg:w-1/5 flex flex-col gap-4 md:gap-6 bg-[#08140e]/60 p-6 md:p-8 rounded-3xl backdrop-blur-md border border-[#1b3d2c]/50 shadow-2xl z-10 mb-6 md:mb-0 md:mr-8">
-                <h3 className="font-playfair text-xl md:text-2xl font-bold text-[#fef6e4] text-center mb-2">
-                  Your Badge is Ready!
-                </h3>
-                
+              {/* Hamburger Menu Toggle Button */}
+              <div className="absolute top-6 right-6 z-30">
                 <button
-                  onClick={handleDownload}
-                  disabled={!renderedDataUrl}
-                  className="w-full bg-[#f3c048] hover:bg-[#e2b13b] text-[#08140e] font-bold py-4 px-6 rounded-2xl transition flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(243,192,72,0.3)] disabled:opacity-50 cursor-pointer text-sm"
+                  onClick={() => setShowCardMenu(!showCardMenu)}
+                  className="bg-[#08140e]/80 hover:bg-[#063b20] text-[#fef6e4] border border-[#1b3d2c] p-3 rounded-xl shadow-xl transition-all cursor-pointer backdrop-blur-md"
                 >
-                  <Download className="w-5 h-5" />
-                  Download ID Card
-                </button>
-                <button
-                  onClick={handleShareToX}
-                  disabled={!renderedDataUrl || isSharing}
-                  className="w-full bg-[#1d9bf0] hover:bg-[#1a8cd8] text-white font-bold py-4 px-6 rounded-2xl transition flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(29,155,240,0.3)] disabled:opacity-50 cursor-pointer text-sm"
-                >
-                  <Twitter className="w-5 h-5 fill-current" />
-                  {isSharing ? 'Uploading...' : 'Share to X'}
-                </button>
-                
-                <div className="h-px w-full bg-[#1b3d2c] my-2"></div>
-                
-                <button
-                  onClick={() => setMode('pfp')}
-                  className="w-full bg-[#063b20] hover:bg-[#084f2b] text-[#fef6e4] border-2 border-[#94a3b8] font-bold py-4 px-6 rounded-2xl transition flex items-center justify-center gap-2 cursor-pointer text-sm"
-                >
-                  <ArrowLeft className="w-5 h-5" />
-                  Back to Editing
+                  {showCardMenu ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
                 </button>
               </div>
 
-              {/* Right Side: Massive 3D Physics View */}
-              <div className="w-full md:w-3/4 lg:w-4/5 h-[60vh] md:h-[95vh] relative drop-shadow-[0_0_80px_rgba(255,45,117,0.3)]">
+              {/* Action Buttons Dropdown Menu */}
+              {showCardMenu && (
+                <div className="absolute top-20 right-6 w-64 md:w-72 flex flex-col gap-3 md:gap-4 bg-[#08140e]/90 p-5 md:p-6 rounded-3xl backdrop-blur-xl border border-[#1b3d2c]/80 shadow-[0_10px_50px_rgba(0,0,0,0.5)] z-20 animate-fadeIn">
+                  <h3 className="font-playfair text-lg font-bold text-[#fef6e4] text-center mb-1">
+                    Your Badge is Ready!
+                  </h3>
+                  
+                  <button
+                    onClick={handleDownload}
+                    disabled={!renderedDataUrl}
+                    className="w-full bg-[#f3c048] hover:bg-[#e2b13b] text-[#08140e] font-bold py-3 md:py-3.5 px-4 rounded-xl transition flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(243,192,72,0.3)] disabled:opacity-50 cursor-pointer text-sm"
+                  >
+                    <Download className="w-4 h-4" />
+                    Download ID Card
+                  </button>
+                  <button
+                    onClick={handleShareToX}
+                    disabled={!renderedDataUrl || isSharing}
+                    className="w-full bg-[#1d9bf0] hover:bg-[#1a8cd8] text-white font-bold py-3 md:py-3.5 px-4 rounded-xl transition flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(29,155,240,0.3)] disabled:opacity-50 cursor-pointer text-sm"
+                  >
+                    <Twitter className="w-4 h-4 fill-current" />
+                    {isSharing ? 'Uploading...' : 'Share to X'}
+                  </button>
+                  
+                  <div className="h-px w-full bg-[#1b3d2c] my-1"></div>
+                  
+                  <button
+                    onClick={() => {
+                      setShowCardMenu(false);
+                      setMode('pfp');
+                    }}
+                    className="w-full bg-[#063b20] hover:bg-[#084f2b] text-[#fef6e4] border border-[#94a3b8]/30 font-bold py-3 md:py-3.5 px-4 rounded-xl transition flex items-center justify-center gap-2 cursor-pointer text-sm"
+                  >
+                    <ArrowLeft className="w-4 h-4" />
+                    Back to Editing
+                  </button>
+                </div>
+              )}
+
+              {/* Massive 3D Physics View (True 100% Full Screen) */}
+              <div className="absolute inset-0 w-full h-full drop-shadow-[0_0_80px_rgba(255,45,117,0.3)] z-0">
                 <PhysicsCardPreview textureUrl={renderedDataUrl} />
               </div>
             </div>

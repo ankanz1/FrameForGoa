@@ -140,6 +140,24 @@ export const PhotoCropper: React.FC<PhotoCropperProps> = ({
     setIsDragging(false);
   };
 
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (!imageSrc) return;
+    setIsDragging(true);
+    setDragStart({ x: e.touches[0].clientX - offset.x, y: e.touches[0].clientY - offset.y });
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!isDragging) return;
+    setOffset({
+      x: e.touches[0].clientX - dragStart.x,
+      y: e.touches[0].clientY - dragStart.y,
+    });
+  };
+
+  const handleTouchEnd = () => {
+    setIsDragging(false);
+  };
+
   const handleReset = () => {
     setScale(1);
     setOffset({ x: 0, y: 0 });
@@ -189,9 +207,12 @@ export const PhotoCropper: React.FC<PhotoCropperProps> = ({
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
         onDragOver={handleDragOver}
         onDrop={handleDrop}
-        className="relative w-full h-72 bg-[var(--hh-ink)] rounded-xl overflow-hidden border-2 border-dashed border-[var(--hh-green-dark)] flex items-center justify-center cursor-grab active:cursor-grabbing select-none"
+        className="relative w-full h-72 bg-[var(--hh-ink)] rounded-xl overflow-hidden border-2 border-dashed border-[var(--hh-green-dark)] flex items-center justify-center cursor-grab active:cursor-grabbing select-none touch-none"
       >
         {isLoading ? (
           <div className="text-center p-6 text-[var(--hh-ink-muted)]">

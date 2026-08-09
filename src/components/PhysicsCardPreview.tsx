@@ -168,8 +168,8 @@ export function PhysicsCardPreview({ textureUrl }: { textureUrl: string | null }
   }
 
   return (
-    <div className="w-full h-full">
-      <Canvas camera={{ position: [0, -2, 12], fov: 40 }}>
+    <div className="w-full h-full touch-none">
+      <Canvas style={{ touchAction: 'none' }} camera={{ position: [0, -2, 12], fov: 40 }}>
         <ambientLight intensity={0.5} />
         <directionalLight position={[10, 10, 5]} intensity={1} castShadow />
         
