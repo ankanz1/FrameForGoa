@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Download, Share2, Sparkles, Check, Twitter, Copy, RefreshCw, ArrowLeft, X } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { Mode, BadgeDetails, CropArea } from './types';
-import { drawCanvas } from './lib/canvasDraw';
+import { drawCanvas, canvasToBlob } from './lib/canvasDraw';
 import { PhotoCropper } from './components/PhotoCropper';
 import { BadgeForm } from './components/BadgeForm';
 import { PresetAvatars } from './components/PresetAvatars';
@@ -69,9 +69,10 @@ export default function App() {
     };
   }, [mode, imageSrc, cropArea, badgeDetails]);
 
-  // Download high-resolution PNG
-  const handleDownload = () => {
-    if (!renderedDataUrl) return;
+  // Download high-resolution PNG via canvas.toBlob → real file download
+  const handleDownload = async () => {
+    const canvas = previewCanvasRef.current;
+    if (!canvas) return;
 
     // Trigger celebratory confetti burst
     confetti({
@@ -81,17 +82,27 @@ export default function App() {
       colors: ['#f6c81a', '#ff2e93', '#ffffff'],
     });
 
-    const link = document.createElement('a');
-    const filename =
-      mode === 'pfp'
-        ? 'hh-goa-2026-pfp-frame.png'
-        : `hh-goa-2026-builder-badge-${(badgeDetails.name || 'builder')
-            .toLowerCase()
-            .replace(/\s+/g, '-')}.png`;
+    try {
+      const blob = await canvasToBlob(canvas);
+      const url = URL.createObjectURL(blob);
 
-    link.download = filename;
-    link.href = renderedDataUrl;
-    link.click();
+      const link = document.createElement('a');
+      const filename =
+        mode === 'pfp'
+          ? 'hh-goa-2026-pfp-frame.png'
+          : `hh-goa-2026-builder-badge-${(badgeDetails.name || 'builder')
+              .toLowerCase()
+              .replace(/\s+/g, '-')}.png`;
+
+      link.download = filename;
+      link.href = url;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Failed to export PNG', err);
+    }
   };
 
   // Upload graphic & prepare share intent on X
@@ -137,7 +148,10 @@ export default function App() {
     <div className="min-h-screen bg-[var(--hh-green)] text-[var(--hh-cream)] font-body-text pb-16 relative overflow-x-hidden">
       <div className="relative z-10">
         {/* Official HH Goa Hero Banner Section (Full Screen Opening View) */}
-        <section className="bg-[var(--hh-green)] px-4 py-8 sm:py-12 min-h-screen flex flex-col justify-between relative overflow-hidden">
+        <section
+          className="bg-[var(--hh-green)] bg-cover bg-center px-4 py-8 sm:py-12 min-h-screen flex flex-col justify-between relative overflow-hidden"
+          style={{ backgroundImage: "linear-gradient(rgba(11, 104, 57, 0.38), rgba(11, 104, 57, 0.38)), url('/goa-beach-illustration.svg')" }}
+        >
           <div className="max-w-6xl mx-auto w-full relative z-10 flex flex-col justify-between min-h-screen py-4">
             {/* Integrated Top Bar inside Hero */}
             <div className="flex items-center justify-between">
@@ -190,11 +204,11 @@ export default function App() {
 
         {/* Main App Content Area (Full Page Section) */}
         <main id="main-section" className="max-w-6xl mx-auto px-4 min-h-screen flex flex-col justify-center py-12">
-          {/* Interactive Floating Pinned Up Notice Board */}
+          {/* Interactive Floating TRY Notice Board */}
           <section className="text-center my-auto">
             <div className="inline-block mb-4">
               <span className="font-mono text-xs font-bold tracking-[0.3em] text-[var(--hh-gold)] uppercase">
-                PINNED UP
+                TRY
               </span>
               <h3 className="font-serif text-3xl sm:text-4xl font-black text-[var(--hh-cream)] tracking-tight uppercase leading-none mt-1">
                 FrameInGoa
@@ -226,7 +240,7 @@ export default function App() {
 
                 <div className="text-center pt-2 space-y-2">
                   <h4 className="font-mono text-sm sm:text-base font-bold leading-snug text-[var(--hh-ink)]">
-                    Task #1 HH Goa Frame / ID Card Generator
+                    HH Goa Frame / ID Card Generator
                   </h4>
                   <p className="font-mono text-[11px] text-[var(--hh-ink-muted)] leading-relaxed">
                     Generate circular PFP frame overlay with Goa sunrise graphics for X & LinkedIn.

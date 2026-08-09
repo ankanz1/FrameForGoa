@@ -1,9 +1,24 @@
 import express from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { v2 as cloudinary } from 'cloudinary';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+function isCloudinaryConfigured(): boolean {
+  return Boolean(
+    process.env.CLOUDINARY_CLOUD_NAME &&
+      process.env.CLOUDINARY_API_KEY &&
+      process.env.CLOUDINARY_API_SECRET
+  );
+}
 
 const app = express();
 const PORT = 3000;
@@ -12,8 +27,11 @@ const PORT = 3000;
 app.use(express.json({ limit: '15mb' }));
 
 // In-memory store for generated graphics (for X share preview links)
-// Key: graphicId, Value: { dataUrl: string, createdAt: number }
-const graphicsStore = new Map<string, { dataUrl: string; createdAt: number }>();
+// Key: graphicId, Value: { dataUrl: string, remoteUrl?: string, createdAt: number }
+const graphicsStore = new Map<
+  string,
+  { dataUrl: string; remoteUrl?: string; createdAt: number }
+>();
 
 // Clean up graphics older than 24 hours periodically
 setInterval(() => {
@@ -26,7 +44,7 @@ setInterval(() => {
 }, 60 * 60 * 1000);
 
 // API endpoint to store a generated graphic & return shareable URL
-app.post('/api/upload', (req, res) => {
+app.post('/api/upload', async (req, res) => {
   try {
     const { image } = req.body;
     if (!image || typeof image !== 'string') {
@@ -34,8 +52,29 @@ app.post('/api/upload', (req, res) => {
     }
 
     const id = Math.random().toString(36).substring(2, 12);
+
+    // Try to upload to Cloudinary first for a durable public image URL.
+    // Falls back to the in-memory data URL if Cloudinary isn't configured.
+    let remoteUrl: string | undefined;
+    if (isCloudinaryConfigured()) {
+      try {
+        const result = await cloudinary.uploader.upload(image, {
+          folder: 'hhgoa-2026',
+          public_id: id,
+          resource_type: 'image',
+          format: 'png',
+          overwrite: true,
+        });
+        remoteUrl = result.secure_url;
+        console.log('Uploaded graphic to Cloudinary', remoteUrl);
+      } catch (err) {
+        console.error('Cloudinary upload failed, using in-memory fallback', err);
+      }
+    }
+
     graphicsStore.set(id, {
       dataUrl: image,
+      remoteUrl,
       createdAt: Date.now(),
     });
 
@@ -49,13 +88,29 @@ app.post('/api/upload', (req, res) => {
   }
 });
 
-// API endpoint to serve raw image PNG
+// Resolve the public image URL for a graphic (Cloudinary when available)
+function imageUrlFor(id: string) {
+  const record = graphicsStore.get(id);
+  if (record?.remoteUrl) return record.remoteUrl;
+  const appUrl = process.env.APP_URL || `http://localhost:${PORT}`;
+  return `${appUrl}/api/image/${id}.png`;
+}
+
+// API endpoint to serve raw image PNG (redirects to Cloudinary when available)
 app.get('/api/image/:id.png', (req, res) => {
   const id = req.params.id;
   const record = graphicsStore.get(id);
 
   if (!record) {
     return res.status(404).send('Image not found or expired');
+  }
+
+  if (record.remoteUrl) {
+    res.writeHead(302, {
+      Location: record.remoteUrl,
+      'Cache-Control': 'public, max-age=86400',
+    });
+    return res.end();
   }
 
   const base64Data = record.dataUrl.replace(/^data:image\/\w+;base64,/, '');
@@ -74,7 +129,7 @@ app.get('/s/:id', (req, res) => {
   const id = req.params.id;
   const record = graphicsStore.get(id);
   const appUrl = process.env.APP_URL || `http://localhost:${PORT}`;
-  const imageUrl = `${appUrl}/api/image/${id}.png`;
+  const imageUrl = imageUrlFor(id);
 
   const html = `
     <!DOCTYPE html>
