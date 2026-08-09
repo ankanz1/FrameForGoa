@@ -145,6 +145,23 @@ export const PhotoCropper: React.FC<PhotoCropperProps> = ({
     setOffset({ x: 0, y: 0 });
   };
 
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    const file = e.dataTransfer.files?.[0];
+    if (!file) return;
+    
+    // Pass as a mock event to handleFileUpload
+    const mockEvent = {
+      target: { files: [file] }
+    } as unknown as React.ChangeEvent<HTMLInputElement>;
+    
+    handleFileUpload(mockEvent);
+  };
+
   return (
     <div className="bg-[var(--hh-green)] rounded-2xl p-5 shadow-xl">
       <div className="flex items-center justify-between mb-4">
@@ -172,6 +189,8 @@ export const PhotoCropper: React.FC<PhotoCropperProps> = ({
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
+        onDragOver={handleDragOver}
+        onDrop={handleDrop}
         className="relative w-full h-72 bg-[var(--hh-ink)] rounded-xl overflow-hidden border-2 border-dashed border-[var(--hh-green-dark)] flex items-center justify-center cursor-grab active:cursor-grabbing select-none"
       >
         {isLoading ? (
@@ -203,13 +222,14 @@ export const PhotoCropper: React.FC<PhotoCropperProps> = ({
             <div className="absolute inset-0 border-2 border-[var(--hh-gold)]/50 rounded-full pointer-events-none max-w-[220px] max-h-[220px] m-auto shadow-[0_0_0_9999px_rgba(6,24,15,0.6)]" />
           </div>
         ) : (
-          <div className="text-center p-6">
-            <div className="w-16 h-16 bg-[var(--hh-green-dark)] rounded-full flex items-center justify-center mx-auto mb-3 text-[var(--hh-gold)]">
+          <label className="cursor-pointer w-full h-full flex flex-col items-center justify-center text-center p-6 transition hover:bg-[#063b20]/50">
+            <input type="file" accept="image/*,.heic,.heif" onChange={handleFileUpload} className="hidden" />
+            <div className="w-16 h-16 bg-[var(--hh-green-dark)] rounded-full flex items-center justify-center mx-auto mb-3 text-[var(--hh-gold)] transition-transform hover:scale-110">
               <Upload className="w-8 h-8" />
             </div>
             <p className="text-[var(--hh-cream)] font-medium mb-1">Drag & drop or click Upload</p>
             <p className="text-xs text-[var(--hh-ink-muted)]">Supports JPG, PNG, HEIC from iPhone</p>
-          </div>
+          </label>
         )}
       </div>
 
