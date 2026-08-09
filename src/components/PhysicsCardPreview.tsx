@@ -128,7 +128,6 @@ function Band({ textureUrl }: BandProps) {
                 drag(new THREE.Vector3().copy(e.point).sub(vec.copy(card.current.translation() as THREE.Vector3)));
               }
             }}
-            className="cursor-grab active:cursor-grabbing"
           >
             <boxGeometry args={[cardWidth, cardHeight, 0.05]} />
             <meshStandardMaterial color="#222" roughness={0.5} />
