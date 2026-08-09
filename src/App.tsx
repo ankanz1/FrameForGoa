@@ -7,6 +7,10 @@ import { PhotoCropper } from './components/PhotoCropper';
 import { BadgeForm } from './components/BadgeForm';
 import { PresetAvatars } from './components/PresetAvatars';
 import { getRandomBuilderTitle } from './lib/builderTitle';
+import { CountdownTimer } from './components/CountdownTimer';
+import { MarqueeTicker } from './components/MarqueeTicker';
+import { GoaFeatures } from './components/GoaFeatures';
+import { PhysicsCardPreview } from './components/PhysicsCardPreview';
 
 export default function App() {
   const [mode, setMode] = useState<Mode>('pfp');
@@ -86,8 +90,8 @@ export default function App() {
       mode === 'pfp'
         ? 'hh-goa-2026-pfp-frame.png'
         : `hh-goa-2026-builder-badge-${(badgeDetails.name || 'builder')
-            .toLowerCase()
-            .replace(/\s+/g, '-')}.png`;
+          .toLowerCase()
+          .replace(/\s+/g, '-')}.png`;
 
     link.download = filename;
     link.href = renderedDataUrl;
@@ -112,8 +116,7 @@ export default function App() {
 
         // Pre-fill tweet caption with #FrameInGoa hashtag & share URL
         const tweetText = encodeURIComponent(
-          `I just created my official HH Goa 2026 ${
-            mode === 'pfp' ? 'PFP Frame' : 'Builder Badge'
+          `I just created my official HH Goa 2026 ${mode === 'pfp' ? 'PFP Frame' : 'Builder Badge'
           }! 🌴🔥\n\nCheck it out & create yours:\n${data.url}\n\n#FrameInGoa #HHGoa2026 @HHGoa2026`
         );
 
@@ -134,10 +137,16 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0b6839] text-[#fef6e4] font-body-text pb-16 relative overflow-x-hidden">
+    <div 
+      className="min-h-screen text-[#fef6e4] font-body-text pb-16 relative overflow-x-hidden bg-cover bg-center bg-fixed"
+      style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=2000&q=80")' }}
+    >
+      {/* Dark green overlay to ensure text readability against the beach background */}
+      <div className="absolute inset-0 bg-[#0b6839]/85 z-0 pointer-events-none"></div>
+      
       <div className="relative z-10">
         {/* Official HH Goa Hero Banner Section (Full Screen Opening View) */}
-        <section className="bg-[#0b6839] px-4 py-8 sm:py-12 min-h-screen flex flex-col justify-between relative overflow-hidden">
+        <section className="px-4 py-8 sm:py-12 min-h-screen flex flex-col justify-between relative overflow-hidden">
           <div className="max-w-6xl mx-auto w-full relative z-10 flex flex-col justify-between min-h-screen py-4">
             {/* Integrated Top Bar inside Hero */}
             <div className="flex items-center justify-between">
@@ -146,7 +155,7 @@ export default function App() {
                 <img
                   src="/hh-goa-logo.svg"
                   alt="Hacker House Goa"
-                  className="h-10 sm:h-12 w-auto object-contain transition transform group-hover:scale-105"
+                  className="h-14 sm:h-20 w-auto object-contain transition transform group-hover:scale-105"
                 />
               </a>
 
@@ -160,7 +169,7 @@ export default function App() {
                 <img
                   src="/studio-logo.svg"
                   alt="2:47 PM Studio"
-                  className="h-9 sm:h-11 w-auto object-contain transition transform group-hover:scale-105"
+                  className="h-12 sm:h-16 w-auto object-contain transition transform group-hover:scale-105"
                 />
               </a>
             </div>
@@ -182,14 +191,23 @@ export default function App() {
                   गोवा
                 </div>
               </div>
+
+              <div className="mt-12 font-playfair text-2xl sm:text-4xl text-[#fef6e4] italic font-bold tracking-wide drop-shadow-lg animate-pulse">
+                Goa Wale Beach Paadh🥳
+              </div>
             </div>
 
-
+            
           </div>
+          
+          <MarqueeTicker />
         </section>
 
         {/* Main App Content Area (Full Page Section) */}
         <main id="main-section" className="max-w-6xl mx-auto px-4 min-h-screen flex flex-col justify-center py-12">
+          
+          <CountdownTimer />
+
           {/* Interactive Floating Pinned Up Notice Board */}
           <section className="text-center my-auto">
             <div className="inline-block mb-4">
@@ -205,11 +223,10 @@ export default function App() {
               {/* Card 1: Circular PFP Frame */}
               <div
                 onClick={() => openStudio('pfp')}
-                className={`group relative bg-[#fffdf0] text-[#1c1917] p-4 sm:p-5 rounded-xl shadow-xl transition-all duration-300 cursor-pointer border-2 ${
-                  isStudioOpen && mode === 'pfp'
+                className={`group relative bg-[#fffdf0] text-[#1c1917] p-4 sm:p-5 rounded-xl shadow-xl transition-all duration-300 cursor-pointer border-2 ${isStudioOpen && mode === 'pfp'
                     ? 'border-[#ff2d75] ring-4 ring-[#ff2d75]/30'
                     : 'border-[#e2e8f0] hover:border-[#facc15]'
-                }`}
+                  }`}
               >
                 {/* Fixed Push Pin Anchor */}
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-20 w-6 h-6 rounded-full bg-gradient-to-br from-[#ff528f] via-[#ff2d75] to-[#c7004c] border-2 border-white shadow-[0_4px_10px_rgba(0,0,0,0.5)] flex items-center justify-center">
@@ -238,11 +255,10 @@ export default function App() {
                         e.stopPropagation();
                         openStudio('pfp');
                       }}
-                      className={`font-serif text-[11px] font-bold px-4 py-2 rounded-full uppercase tracking-wider transition-all duration-200 cursor-pointer shadow-md flex items-center justify-center gap-1.5 mx-auto ${
-                        isStudioOpen && mode === 'pfp'
+                      className={`font-serif text-[11px] font-bold px-4 py-2 rounded-full uppercase tracking-wider transition-all duration-200 cursor-pointer shadow-md flex items-center justify-center gap-1.5 mx-auto ${isStudioOpen && mode === 'pfp'
                           ? 'bg-[#ff2d75] text-white shadow-[#ff2d75]/40 scale-105'
                           : 'bg-[#facc15] text-[#08140e] hover:bg-[#ff2d75] hover:text-white'
-                      }`}
+                        }`}
                     >
                       <span>{isStudioOpen && mode === 'pfp' ? 'PFP STUDIO ACTIVE' : 'OPEN PFP FRAME STUDIO'}</span>
                       <Sparkles className="w-3 h-3" />
@@ -258,11 +274,10 @@ export default function App() {
               {/* Card 2: Builder Badge ID */}
               <div
                 onClick={() => openStudio('card')}
-                className={`group relative bg-[#fffdf0] text-[#1c1917] p-4 sm:p-5 rounded-xl shadow-xl transition-all duration-300 cursor-pointer border-2 ${
-                  isStudioOpen && mode === 'card'
+                className={`group relative bg-[#fffdf0] text-[#1c1917] p-4 sm:p-5 rounded-xl shadow-xl transition-all duration-300 cursor-pointer border-2 ${isStudioOpen && mode === 'card'
                     ? 'border-[#ff2d75] ring-4 ring-[#ff2d75]/30'
                     : 'border-[#e2e8f0] hover:border-[#facc15]'
-                }`}
+                  }`}
               >
                 {/* Fixed Push Pin Anchor */}
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-20 w-6 h-6 rounded-full bg-gradient-to-br from-[#fde047] via-[#facc15] to-[#ca8a04] border-2 border-white shadow-[0_4px_10px_rgba(0,0,0,0.5)] flex items-center justify-center">
@@ -291,11 +306,10 @@ export default function App() {
                         e.stopPropagation();
                         openStudio('card');
                       }}
-                      className={`font-serif text-[11px] font-bold px-4 py-2 rounded-full uppercase tracking-wider transition-all duration-200 cursor-pointer shadow-md flex items-center justify-center gap-1.5 mx-auto ${
-                        isStudioOpen && mode === 'card'
+                      className={`font-serif text-[11px] font-bold px-4 py-2 rounded-full uppercase tracking-wider transition-all duration-200 cursor-pointer shadow-md flex items-center justify-center gap-1.5 mx-auto ${isStudioOpen && mode === 'card'
                           ? 'bg-[#ff2d75] text-white shadow-[#ff2d75]/40 scale-105'
                           : 'bg-[#facc15] text-[#08140e] hover:bg-[#ff2d75] hover:text-white'
-                      }`}
+                        }`}
                     >
                       <span>{isStudioOpen && mode === 'card' ? 'BUILDER ID ACTIVE' : 'OPEN BUILDER ID STUDIO'}</span>
                       <Sparkles className="w-3 h-3" />
@@ -310,154 +324,175 @@ export default function App() {
             </div>
           </section>
 
-        {/* Generator Studio Workspace - Only visible when a card button is clicked */}
-        {isStudioOpen && (
-          <div id="generator-studio" className="mt-8 pt-8 animate-fadeIn">
-            {/* Top Navigation Bar inside Studio */}
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-[#084f2b] p-4 rounded-2xl mb-8 shadow-xl">
-              <button
-                onClick={() => setIsStudioOpen(false)}
-                className="flex items-center gap-2 font-mono text-xs font-bold text-[#facc15] hover:text-white bg-[#063b20] px-4 py-2.5 rounded-xl transition cursor-pointer shadow-md"
-              >
-                <ArrowLeft className="w-4 h-4" />
-                ← BACK TO FRAMEINGOA
-              </button>
-
-              <div className="flex items-center gap-2 bg-[#063b20] p-1.5 rounded-xl">
+          {/* Generator Studio Workspace - Only visible when a card button is clicked */}
+          {isStudioOpen && (
+            <div id="generator-studio" className="mt-8 pt-8 animate-fadeIn">
+              {/* Top Navigation Bar inside Studio */}
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-[#084f2b] p-4 rounded-2xl mb-8 shadow-xl">
                 <button
-                  onClick={() => setMode('pfp')}
-                  className={`py-2 px-4 rounded-lg font-mono text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
-                    mode === 'pfp'
-                      ? 'bg-[#f3c048] text-[#08140e] shadow-md'
-                      : 'text-[#94a3b8] hover:text-[#fef6e4]'
-                  }`}
+                  onClick={() => setIsStudioOpen(false)}
+                  className="flex items-center gap-2 font-mono text-xs font-bold text-[#facc15] hover:text-white bg-[#063b20] px-4 py-2.5 rounded-xl transition cursor-pointer shadow-md"
                 >
-                  <span className="w-2 h-2 rounded-full bg-[#08140e]" />
-                  1. Circular PFP Frame
+                  <ArrowLeft className="w-4 h-4" />
+                  ← BACK TO FRAMEINGOA
                 </button>
 
+                <div className="flex items-center justify-center font-mono text-sm font-bold text-[#facc15] bg-[#063b20] p-2 rounded-xl flex-1 mx-4 shadow-inner text-center">
+                  {mode === 'pfp' ? 'STEP 1: CUSTOMIZE YOUR FRAME & DETAILS' : 'STEP 2: YOUR 3D BUILDER BADGE'}
+                </div>
+
                 <button
-                  onClick={() => setMode('card')}
-                  className={`py-2 px-4 rounded-lg font-mono text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
-                    mode === 'card'
-                      ? 'bg-[#ff2d75] text-white shadow-md'
-                      : 'text-[#94a3b8] hover:text-[#fef6e4]'
-                  }`}
+                  onClick={() => setIsStudioOpen(false)}
+                  className="flex items-center gap-1.5 text-xs font-mono font-bold text-[#94a3b8] hover:text-[#ff2d75] transition cursor-pointer"
                 >
-                  <Sparkles className="w-3.5 h-3.5" />
-                  2. Builder Pass ID
+                  <X className="w-4 h-4" /> Close Studio
                 </button>
               </div>
 
-              <button
-                onClick={() => setIsStudioOpen(false)}
-                className="flex items-center gap-1.5 text-xs font-mono font-bold text-[#94a3b8] hover:text-[#ff2d75] transition cursor-pointer"
-              >
-                <X className="w-4 h-4" /> Close Studio
-              </button>
-            </div>
+              <div className={`grid grid-cols-1 lg:grid-cols-12 gap-8 items-start ${mode === 'card' ? 'hidden' : ''}`}>
+                {/* Left Column: Customization Controls */}
+                <div className="lg:col-span-6 space-y-6">
+                  <PhotoCropper
+                    imageSrc={imageSrc}
+                    onImageChange={setImageSrc}
+                    onCropChange={setCropArea}
+                  />
 
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-              {/* Left Column: Customization Controls */}
-              <div className="lg:col-span-6 space-y-6">
-                <PhotoCropper
-                  imageSrc={imageSrc}
-                  onImageChange={setImageSrc}
-                  onCropChange={setCropArea}
-                />
+                  {!imageSrc && (
+                    <PresetAvatars onSelectPreset={(presetUrl) => setImageSrc(presetUrl)} />
+                  )}
 
-                {!imageSrc && (
-                  <PresetAvatars onSelectPreset={(presetUrl) => setImageSrc(presetUrl)} />
-                )}
-
-                {mode === 'card' && (
                   <BadgeForm details={badgeDetails} onChange={setBadgeDetails} />
-                )}
-              </div>
+                </div>
 
-              {/* Right Column: Live Canvas Preview & Action Buttons */}
-              <div className="lg:col-span-6 lg:sticky lg:top-24">
-                <div className="bg-[#084f2b] rounded-2xl p-6 shadow-xl text-center">
-                  <div className="flex items-center justify-between mb-4 text-left">
-                    <div>
-                      <h3 className="font-playfair text-xl font-bold text-[#fef6e4]">
-                        Live Graphic Preview
-                      </h3>
-                      <p className="text-xs text-[#cbd5e1] font-mono">
-                        {mode === 'pfp' ? '800 × 800 Square Canvas' : '800 × 1100 Portrait Card'}
-                      </p>
+                {/* Right Column: Live Canvas Preview & Action Buttons */}
+                <div className="lg:col-span-6 lg:sticky lg:top-24">
+                  <div className="bg-[#084f2b] rounded-2xl p-6 shadow-xl text-center">
+                    <div className="flex items-center justify-between mb-4 text-left">
+                      <div>
+                        <h3 className="font-playfair text-xl font-bold text-[#fef6e4]">
+                          Live Graphic Preview
+                        </h3>
+                        <p className="text-xs text-[#cbd5e1] font-mono">
+                          800 × 800 Square Canvas
+                        </p>
+                      </div>
+
+                      {isGenerating && (
+                        <span className="text-xs font-mono text-[#f3c048] flex items-center gap-1.5 animate-pulse">
+                          <RefreshCw className="w-3.5 h-3.5 animate-spin" /> Rendering...
+                        </span>
+                      )}
                     </div>
 
-                    {isGenerating && (
-                      <span className="text-xs font-mono text-[#f3c048] flex items-center gap-1.5 animate-pulse">
-                        <RefreshCw className="w-3.5 h-3.5 animate-spin" /> Rendering...
-                      </span>
-                    )}
-                  </div>
+                    {/* Live Canvas Render Container */}
+                    <div className="relative mx-auto max-w-md bg-[#063b20] rounded-xl overflow-hidden p-2 flex items-center justify-center min-h-[340px]">
+                      {renderedDataUrl ? (
+                        <img
+                          src={renderedDataUrl}
+                          alt="Generated HH Goa Graphic"
+                          className="w-full h-auto max-h-[500px] object-contain rounded-lg shadow-lg"
+                        />
+                      ) : (
+                        <div className="p-8 text-[#94a3b8]">
+                          <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-[#f3c048] border-t-transparent mb-2" />
+                          <p className="text-sm">Generating your frame...</p>
+                        </div>
+                      )}
+                    </div>
 
-                  {/* Live Canvas Render Container */}
-                  <div className="relative mx-auto max-w-md bg-[#063b20] rounded-xl overflow-hidden p-2 flex items-center justify-center min-h-[340px]">
-                    {renderedDataUrl ? (
-                      <img
-                        src={renderedDataUrl}
-                        alt="Generated HH Goa Graphic"
-                        className="w-full h-auto max-h-[500px] object-contain rounded-lg shadow-lg"
-                      />
-                    ) : (
-                      <div className="p-8 text-[#94a3b8]">
-                        <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-[#f3c048] border-t-transparent mb-2" />
-                        <p className="text-sm">Generating your frame...</p>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Main Action Call to Actions */}
-                  <div className="mt-6 flex flex-col sm:flex-row items-center gap-3">
-                    <button
-                      onClick={handleDownload}
-                      disabled={!renderedDataUrl}
-                      className="w-full sm:flex-1 bg-[#f3c048] hover:bg-[#e2b13b] text-[#08140e] font-bold py-3.5 px-5 rounded-xl transition flex items-center justify-center gap-2 shadow-lg disabled:opacity-50 cursor-pointer text-sm"
-                    >
-                      <Download className="w-4 h-4" />
-                      Download PNG
-                    </button>
-
-                    <button
-                      onClick={handleShareToX}
-                      disabled={!renderedDataUrl || isSharing}
-                      className="w-full sm:flex-1 bg-[#1d9bf0] hover:bg-[#1a8cd8] text-white font-bold py-3.5 px-5 rounded-xl transition flex items-center justify-center gap-2 shadow-lg disabled:opacity-50 cursor-pointer text-sm"
-                    >
-                      <Twitter className="w-4 h-4 fill-current" />
-                      {isSharing ? 'Uploading...' : 'Share to X (#FrameInGoa)'}
-                    </button>
-                  </div>
-
-                  {/* Generated Shareable Link Callout */}
-                  {shareUrl && (
-                    <div className="mt-4 bg-[#08140e] border border-[#1b3d2c] p-3 rounded-xl flex items-center justify-between gap-2 text-left">
-                      <div className="overflow-hidden">
-                        <span className="block text-[10px] font-mono font-bold text-[#f3c048]">
-                          PUBLIC SHARE PREVIEW LINK:
-                        </span>
-                        <span className="text-xs text-[#cbd5e1] font-mono truncate block">
-                          {shareUrl}
-                        </span>
-                      </div>
-
+                    {/* Main Action Call to Actions */}
+                    <div className="mt-6 flex flex-col sm:flex-row items-center gap-3">
                       <button
-                        onClick={handleCopyLink}
-                        className="bg-[#143827] hover:bg-[#1e4d36] text-[#fef6e4] p-2 rounded-lg text-xs font-mono flex items-center gap-1 transition cursor-pointer"
+                        onClick={handleDownload}
+                        disabled={!renderedDataUrl}
+                        className="w-full sm:flex-1 bg-[#063b20] hover:bg-[#084f2b] text-[#fef6e4] border-2 border-[#f3c048] font-bold py-3.5 px-5 rounded-xl transition flex items-center justify-center gap-2 shadow-lg disabled:opacity-50 cursor-pointer text-sm"
                       >
-                        {copied ? <Check className="w-4 h-4 text-green-400" /> : <Copy className="w-4 h-4" />}
+                        <Download className="w-4 h-4" />
+                        Download PFP
+                      </button>
+                      <button
+                        onClick={() => setMode('card')}
+                        disabled={!renderedDataUrl}
+                        className="w-full sm:flex-1 bg-[#ff2d75] hover:bg-[#d9165b] text-white font-bold py-3.5 px-5 rounded-xl transition flex items-center justify-center gap-2 shadow-lg disabled:opacity-50 cursor-pointer text-sm"
+                      >
+                        Proceed to Builder ID 🚀
                       </button>
                     </div>
-                  )}
+
+                    {/* Generated Shareable Link Callout */}
+                    {shareUrl && (
+                      <div className="mt-4 bg-[#08140e] border border-[#1b3d2c] p-3 rounded-xl flex items-center justify-between gap-2 text-left">
+                        <div className="overflow-hidden">
+                          <span className="block text-[10px] font-mono font-bold text-[#f3c048]">
+                            PUBLIC SHARE PREVIEW LINK:
+                          </span>
+                          <span className="text-xs text-[#cbd5e1] font-mono truncate block">
+                            {shareUrl}
+                          </span>
+                        </div>
+
+                        <button
+                          onClick={handleCopyLink}
+                          className="bg-[#143827] hover:bg-[#1e4d36] text-[#fef6e4] p-2 rounded-lg text-xs font-mono flex items-center gap-1 transition cursor-pointer"
+                        >
+                          {copied ? <Check className="w-4 h-4 text-green-400" /> : <Copy className="w-4 h-4" />}
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        )}
-      </main>
+          )}
+
+          {/* Full Screen Interactive 3D Card Modal Reveal */}
+          {isStudioOpen && mode === 'card' && (
+            <div className="fixed inset-0 z-50 flex flex-col md:flex-row items-center justify-center p-4 md:p-8 backdrop-blur-2xl bg-[#063b20]/80 animate-fadeIn">
+              
+              {/* Left Side: Action Buttons */}
+              <div className="w-full md:w-1/4 lg:w-1/5 flex flex-col gap-4 md:gap-6 bg-[#08140e]/60 p-6 md:p-8 rounded-3xl backdrop-blur-md border border-[#1b3d2c]/50 shadow-2xl z-10 mb-6 md:mb-0 md:mr-8">
+                <h3 className="font-playfair text-xl md:text-2xl font-bold text-[#fef6e4] text-center mb-2">
+                  Your Badge is Ready!
+                </h3>
+                
+                <button
+                  onClick={handleDownload}
+                  disabled={!renderedDataUrl}
+                  className="w-full bg-[#f3c048] hover:bg-[#e2b13b] text-[#08140e] font-bold py-4 px-6 rounded-2xl transition flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(243,192,72,0.3)] disabled:opacity-50 cursor-pointer text-sm"
+                >
+                  <Download className="w-5 h-5" />
+                  Download ID Card
+                </button>
+                <button
+                  onClick={handleShareToX}
+                  disabled={!renderedDataUrl || isSharing}
+                  className="w-full bg-[#1d9bf0] hover:bg-[#1a8cd8] text-white font-bold py-4 px-6 rounded-2xl transition flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(29,155,240,0.3)] disabled:opacity-50 cursor-pointer text-sm"
+                >
+                  <Twitter className="w-5 h-5 fill-current" />
+                  {isSharing ? 'Uploading...' : 'Share to X'}
+                </button>
+                
+                <div className="h-px w-full bg-[#1b3d2c] my-2"></div>
+                
+                <button
+                  onClick={() => setMode('pfp')}
+                  className="w-full bg-[#063b20] hover:bg-[#084f2b] text-[#fef6e4] border-2 border-[#94a3b8] font-bold py-4 px-6 rounded-2xl transition flex items-center justify-center gap-2 cursor-pointer text-sm"
+                >
+                  <ArrowLeft className="w-5 h-5" />
+                  Back to Editing
+                </button>
+              </div>
+
+              {/* Right Side: Massive 3D Physics View */}
+              <div className="w-full md:w-3/4 lg:w-4/5 h-[60vh] md:h-[95vh] relative drop-shadow-[0_0_80px_rgba(255,45,117,0.3)]">
+                <PhysicsCardPreview textureUrl={renderedDataUrl} />
+              </div>
+            </div>
+          )}
+        </main>
+
+        <GoaFeatures />
       </div>
     </div>
   );

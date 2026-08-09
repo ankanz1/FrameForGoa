@@ -75,8 +75,11 @@ function drawPfpFrame(
   const centerX = size / 2;
   const centerY = size / 2;
 
-  // 1. Fill background with rich dark tropical green pattern
-  ctx.fillStyle = BRAND.bgDark;
+  // 1. Fill background with tropical radial gradient
+  const bgGrad = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, size);
+  bgGrad.addColorStop(0, '#144c2e'); // Lighter tropical green center
+  bgGrad.addColorStop(1, BRAND.bgDark);
+  ctx.fillStyle = bgGrad;
   ctx.fillRect(0, 0, size, size);
 
   // Decorative subtle background grid
@@ -134,11 +137,15 @@ function drawPfpFrame(
   ctx.restore();
 
   // Photo inner gold stroke border
+  ctx.save();
   ctx.beginPath();
   ctx.arc(centerX, centerY, photoRadius, 0, Math.PI * 2);
-  ctx.lineWidth = 8;
+  ctx.lineWidth = 10;
   ctx.strokeStyle = BRAND.accentGold;
+  ctx.shadowColor = BRAND.accentGold;
+  ctx.shadowBlur = 15;
   ctx.stroke();
+  ctx.restore();
 
   // 3. Draw Checkerboard Gold Ring around photo
   drawCheckerboardRing(ctx, centerX, centerY, photoRadius + 12, photoRadius + 36, 48);
@@ -150,10 +157,10 @@ function drawPfpFrame(
   ctx.strokeStyle = BRAND.accentGold;
   ctx.stroke();
 
-  // 4. Arced Text "HACKER HOUSE GOA 2026" on Top Arc
+  // 4. Arced Text on Top Arc
   drawArcText(
     ctx,
-    'HACKER HOUSE GOA 2026',
+    'HACKER HOUSE GOA • OCT 2026',
     centerX,
     centerY,
     photoRadius + 24,
@@ -185,12 +192,15 @@ function drawPfpFrame(
   const bannerX = centerX - bannerWidth / 2;
   const bannerY = size - 110;
 
-  // Banner background with pink accent
+  // Banner background with pink/orange gradient
   ctx.save();
-  ctx.fillStyle = BRAND.accentPink;
+  const bannerGrad = ctx.createLinearGradient(bannerX, bannerY, bannerX + bannerWidth, bannerY);
+  bannerGrad.addColorStop(0, BRAND.accentPink);
+  bannerGrad.addColorStop(1, '#ff6b2b'); // sunset orange
+  ctx.fillStyle = bannerGrad;
   ctx.shadowColor = 'rgba(0, 0, 0, 0.6)';
-  ctx.shadowBlur = 15;
-  ctx.shadowOffsetY = 6;
+  ctx.shadowBlur = 20;
+  ctx.shadowOffsetY = 8;
   ctx.beginPath();
   ctx.roundRect(bannerX, bannerY, bannerWidth, bannerHeight, 32);
   ctx.fill();
