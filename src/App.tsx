@@ -130,6 +130,21 @@ export default function App() {
     // window.open() fired after an await, so we open it first and navigate later.
     const popup = window.open('', '_blank');
 
+    // Render a spinner into the popup immediately so it's never a blank page.
+    if (popup) {
+      try {
+        popup.document.write(
+          '<!doctype html><html><body style="margin:0;background:#08140e;display:flex;align-items:center;justify-content:center;height:100vh;flex-direction:column;gap:16px;font-family:system-ui;-webkit-font-smoothing:antialiased">' +
+            '<div style="width:42px;height:42px;border-radius:50%;border:4px solid rgba(243,192,72,.25);border-top-color:#f3c048;animation:spin 1s linear infinite"></div>' +
+            '<p style="color:#fef6e4;font-size:14px;margin:0">Preparing your HH Goa share…</p>' +
+            '<style>@keyframes spin{to{transform:rotate(360deg)}}</style></body></html>'
+        );
+        popup.document.close();
+      } catch {
+        // Popup already navigated or write blocked; ignore.
+      }
+    }
+
     try {
       const res = await fetch('/api/upload', {
         method: 'POST',
@@ -137,28 +152,39 @@ export default function App() {
         body: JSON.stringify({ image: renderedDataUrl }),
       });
 
-      const data = await res.json();
-      if (data.url) {
-        setShareUrl(data.url);
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.url) {
+        throw new Error(data.error || 'Upload failed');
+      }
 
-        // Pre-fill the X post with the generated share URL and campaign hashtags
-        const tweetText = encodeURIComponent(
-          `I just created my official HH Goa 2026 ${mode === 'pfp' ? 'PFP Frame' : 'Builder Badge'
-          }! 🌴🔥\n\nCheck it out & create yours:\n${data.url}\n\n#FrameInGoa #HHGoa2026 @HHGoa2026`
-        );
+      setShareUrl(data.url);
 
-        const xIntentUrl = `https://x.com/intent/tweet?text=${tweetText}`;
-        if (popup && !popup.closed) {
+      // Pre-fill the X post with the generated share URL and campaign hashtags
+      const tweetText = encodeURIComponent(
+        `I just created my official HH Goa 2026 ${mode === 'pfp' ? 'PFP Frame' : 'Builder Badge'
+        }! 🌴🔥\n\nCheck it out & create yours:\n${data.url}\n\n#FrameInGoa #HHGoa2026 @HHGoa2026`
+      );
+
+      const xIntentUrl = `https://x.com/intent/tweet?text=${tweetText}`;
+      if (popup && !popup.closed) {
+        try {
           popup.location.href = xIntentUrl;
-        } else {
-          window.location.href = xIntentUrl;
+        } catch {
+          window.open(xIntentUrl, '_blank');
         }
-      } else if (popup && !popup.closed) {
-        popup.close();
+      } else {
+        window.open(xIntentUrl, '_blank', 'noopener');
       }
     } catch (err) {
       console.error('Share upload failed', err);
-      if (popup && !popup.closed) popup.close();
+      if (popup && !popup.closed) {
+        try {
+          popup.close();
+        } catch {
+          // ignore
+        }
+      }
+      alert('Could not prepare your X post. Please try again.');
     } finally {
       setIsSharing(false);
     }
