@@ -44,6 +44,26 @@ function compressCanvasForShare(source: HTMLCanvasElement, maxBytes = 2_500_000)
   return out;
 }
 
+async function compressImageForShare(imageSrc: string, maxBytes = 2_500_000): Promise<string> {
+  if (imageSrc.length <= maxBytes) return imageSrc;
+
+  const image = new Image();
+  image.src = imageSrc;
+  await new Promise<void>((resolve, reject) => {
+    image.onload = () => resolve();
+    image.onerror = () => reject(new Error('Could not prepare image for sharing'));
+  });
+
+  const scale = Math.min(1, Math.sqrt(maxBytes / Math.max(1, imageSrc.length)) * 0.85);
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.max(400, Math.round(image.naturalWidth * scale));
+  canvas.height = Math.max(400, Math.round(image.naturalHeight * scale));
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return imageSrc;
+  ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+  return compressCanvasForShare(canvas, maxBytes);
+}
+
 export default function App() {
   const [mode, setMode] = useState<Mode>('pfp');
   const [isStudioOpen, setIsStudioOpen] = useState(false);
@@ -149,10 +169,10 @@ export default function App() {
   };
 
   // Upload graphic & prepare share intent on X
-  const handleShareToX = async () => {
-    if (!renderedDataUrl) return;
+  const handleShareToX = async (shareMode: Mode, shareImage: string | null) => {
+    if (!shareImage) return;
     setIsSharing(true);
-    const fallbackText = `I just created my official HH Goa 2026 ${mode === 'pfp' ? 'PFP Frame' : 'Builder Badge'
+    const fallbackText = `I just created my official HH Goa 2026 ${shareMode === 'pfp' ? 'PFP Frame' : 'Builder Badge'
       }! 🌴🔥\n\n#FrameInGoa #HHGoa2026 @HHGoa2026`;
     const initialXUrl = `https://x.com/intent/post?text=${encodeURIComponent(fallbackText)}`;
 
@@ -166,14 +186,11 @@ export default function App() {
     }
 
     try {
-      const sourceCanvas = previewCanvasRef.current;
       const res = await fetch('/api/upload', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          image: sourceCanvas
-            ? compressCanvasForShare(sourceCanvas)
-            : renderedDataUrl,
+          image: await compressImageForShare(shareImage),
         }),
       });
 
@@ -185,7 +202,7 @@ export default function App() {
       setShareUrl(data.url);
 
       // Pre-fill the X post with the generated share URL and campaign hashtags
-      const shareText = `I just created my official HH Goa 2026 ${mode === 'pfp' ? 'PFP Frame' : 'Builder Badge'
+      const shareText = `I just created my official HH Goa 2026 ${shareMode === 'pfp' ? 'PFP Frame' : 'Builder Badge'
         }! 🌴🔥\n\nCheck it out & create yours:\n${data.url}\n\n#FrameInGoa #HHGoa2026 @HHGoa2026`;
 
       popup.location.href = `https://x.com/intent/post?text=${encodeURIComponent(shareText)}`;
@@ -489,7 +506,7 @@ export default function App() {
                     </div>
 
                     <button
-                      onClick={handleShareToX}
+                      onClick={() => handleShareToX('pfp', pfpDataUrl)}
                       disabled={!renderedDataUrl || isSharing}
                       className="mt-3 w-full bg-[#050505] hover:bg-[#1f1f1f] text-white font-bold py-3.5 px-5 rounded-xl transition flex items-center justify-center gap-2 shadow-lg disabled:opacity-50 cursor-pointer text-sm"
                     >
@@ -535,7 +552,7 @@ export default function App() {
                     Download ID Card
                   </button>
                   <button
-                    onClick={handleShareToX}
+                    onClick={() => handleShareToX('card', cardDataUrl)}
                     disabled={!renderedDataUrl || isSharing}
                     className="w-full bg-[#1d9bf0] hover:bg-[#1a8cd8] text-white font-bold py-3 md:py-3.5 px-4 rounded-xl transition flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(29,155,240,0.3)] disabled:opacity-50 cursor-pointer text-sm"
                   >
