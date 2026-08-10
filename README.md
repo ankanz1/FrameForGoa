@@ -2,6 +2,9 @@
 
 A Vite, React, and Express app for creating HH Goa 2026 profile frames and builder ID cards. Upload a photo, add builder details, generate the campaign artwork, preview it on an interactive 3D card, download a PNG, or share it to X.
 
+<img width="1907" height="867" alt="image" src="https://github.com/user-attachments/assets/ff3b1161-74ea-4520-bb06-174ce90cd9bc" />
+
+
 ## Features
 
 - HH Goa PFP artwork rendered at 2048 x 2048.
