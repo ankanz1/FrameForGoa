@@ -1,4 +1,5 @@
 import { CropArea, BadgeDetails, Mode } from '../types';
+import { removeBackground } from '../services/removeBackground';
 
 /**
  * Brand Color Palette
@@ -29,13 +30,19 @@ export async function drawCanvas(
   const ctx = canvas.getContext('2d');
   if (!ctx) throw new Error('Could not get 2D canvas context');
 
-  // Load user cropped photo if available
+  // Load the user's image, removing its background for the fixed PFP composition.
   let imgElement: HTMLImageElement | null = null;
   if (imageSrc) {
     try {
-      imgElement = await loadImage(imageSrc);
+      const source = mode === 'pfp' ? await removeBackground(imageSrc) : imageSrc;
+      imgElement = await loadImage(source);
     } catch (e) {
       console.warn('Could not load user image', e);
+      try {
+        imgElement = await loadImage(imageSrc);
+      } catch (fallbackError) {
+        console.warn('Could not load fallback user image', fallbackError);
+      }
     }
   }
 
@@ -48,10 +55,9 @@ export async function drawCanvas(
   }
 
   if (mode === 'pfp') {
-    // 800 x 800 Square Profile Picture Frame
-    canvas.width = 800;
-    canvas.height = 800;
-    drawPfpFrame(ctx, imgElement, cropArea, studioLogoImg);
+    canvas.width = 2048;
+    canvas.height = 2048;
+    await drawPfpFrame(ctx, imgElement, cropArea);
   } else {
     // 800 x 1100 Portrait Builder Badge ID Card
     canvas.width = 800;
@@ -65,164 +71,148 @@ export async function drawCanvas(
 /**
  * Draws the PFP Frame (800x800)
  */
-function drawPfpFrame(
+async function drawPfpFrame(
   ctx: CanvasRenderingContext2D,
   img: HTMLImageElement | null,
-  cropArea: CropArea | null,
-  studioLogoImg: HTMLImageElement | null = null
+  cropArea: CropArea | null
 ) {
-  const size = 800;
+  const size = 2048;
   const centerX = size / 2;
-  const centerY = size / 2;
+  const sunCenterY = 1475;
+  const sunRadius = 590;
+  const [ring, texture] = await Promise.all([
+    loadImage('/assets/hhgoa/brush-ring.svg'),
+    loadImage('/assets/hhgoa/texture.svg'),
+  ]);
 
-  // 1. Fill background with tropical radial gradient
-  const bgGrad = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, size);
-  bgGrad.addColorStop(0, '#144c2e'); // Lighter tropical green center
-  bgGrad.addColorStop(1, BRAND.bgDark);
-  ctx.fillStyle = bgGrad;
+  ctx.fillStyle = '#0D5B3A';
   ctx.fillRect(0, 0, size, size);
+  ctx.globalAlpha = 0.24;
+  ctx.fillStyle = ctx.createPattern(texture, 'repeat') ?? '#0D5B3A';
+  ctx.fillRect(0, 0, size, size);
+  ctx.globalAlpha = 1;
 
-  // Decorative subtle background grid
-  drawBackgroundGrid(ctx, size, size);
-
-  // Outer decorative ring radii
-  const photoRadius = 280;
-  const outerRingRadius = photoRadius + 45;
-
-  // 2. Draw user photo inside circular clip
-  ctx.save();
+  ctx.fillStyle = '#FFD21C';
   ctx.beginPath();
-  ctx.arc(centerX, centerY, photoRadius, 0, Math.PI * 2);
-  ctx.closePath();
-  ctx.clip();
-
-  if (img && cropArea) {
-    ctx.drawImage(
-      img,
-      cropArea.x,
-      cropArea.y,
-      cropArea.width,
-      cropArea.height,
-      centerX - photoRadius,
-      centerY - photoRadius,
-      photoRadius * 2,
-      photoRadius * 2
-    );
-  } else if (img) {
-    // Default cover fit
-    const minDim = Math.min(img.width, img.height);
-    const sx = (img.width - minDim) / 2;
-    const sy = (img.height - minDim) / 2;
-    ctx.drawImage(
-      img,
-      sx,
-      sy,
-      minDim,
-      minDim,
-      centerX - photoRadius,
-      centerY - photoRadius,
-      photoRadius * 2,
-      photoRadius * 2
-    );
-  } else {
-    // Placeholder avatar pattern
-    ctx.fillStyle = '#1e3a2b';
-    ctx.fillRect(centerX - photoRadius, centerY - photoRadius, photoRadius * 2, photoRadius * 2);
-    ctx.fillStyle = BRAND.accentGold;
-    ctx.font = 'bold 120px "Playfair Display", Georgia, serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText('HH', centerX, centerY);
-  }
-  ctx.restore();
-
-  // Photo inner gold stroke border
-  ctx.save();
-  ctx.beginPath();
-  ctx.arc(centerX, centerY, photoRadius, 0, Math.PI * 2);
-  ctx.lineWidth = 10;
-  ctx.strokeStyle = BRAND.accentGold;
-  ctx.shadowColor = BRAND.accentGold;
-  ctx.shadowBlur = 15;
-  ctx.stroke();
-  ctx.restore();
-
-  // 3. Draw Checkerboard Gold Ring around photo
-  drawCheckerboardRing(ctx, centerX, centerY, photoRadius + 12, photoRadius + 36, 48);
-
-  // Outer Gold Border Stroke
-  ctx.beginPath();
-  ctx.arc(centerX, centerY, outerRingRadius, 0, Math.PI * 2);
-  ctx.lineWidth = 4;
-  ctx.strokeStyle = BRAND.accentGold;
-  ctx.stroke();
-
-  // 4. Arced Text on Top Arc
-  drawArcText(
-    ctx,
-    'HACKER HOUSE GOA • OCT 2026',
-    centerX,
-    centerY,
-    photoRadius + 24,
-    -Math.PI / 2, // top center
-    true, // curve upward
-    'bold 28px "IBM Plex Mono", monospace',
-    BRAND.cream
-  );
-
-  // Arced Text "• SHIPPED IN GOA • SHIPPED IN GOA •" on Bottom Arc
-  drawArcText(
-    ctx,
-    '• SHIPPED IN GOA • SHIPPED IN GOA •',
-    centerX,
-    centerY,
-    photoRadius + 24,
-    Math.PI / 2, // bottom center
-    false, // curve downward
-    'bold 22px "IBM Plex Mono", monospace',
-    BRAND.accentGold
-  );
-
-  // 5. Corner Decorative Ticket Stamps / Motifs
-  drawCornerAccents(ctx, size, size);
-
-  // 6. Bottom Banner Badge "HH GOA 2026"
-  const bannerWidth = 420;
-  const bannerHeight = 64;
-  const bannerX = centerX - bannerWidth / 2;
-  const bannerY = size - 110;
-
-  // Banner background with pink/orange gradient
-  ctx.save();
-  const bannerGrad = ctx.createLinearGradient(bannerX, bannerY, bannerX + bannerWidth, bannerY);
-  bannerGrad.addColorStop(0, BRAND.accentPink);
-  bannerGrad.addColorStop(1, '#ff6b2b'); // sunset orange
-  ctx.fillStyle = bannerGrad;
-  ctx.shadowColor = 'rgba(0, 0, 0, 0.6)';
-  ctx.shadowBlur = 20;
-  ctx.shadowOffsetY = 8;
-  ctx.beginPath();
-  ctx.roundRect(bannerX, bannerY, bannerWidth, bannerHeight, 32);
+  ctx.arc(centerX, sunCenterY, sunRadius, 0, Math.PI * 2);
   ctx.fill();
 
-  // Banner inner gold border
-  ctx.strokeStyle = BRAND.accentGold;
-  ctx.lineWidth = 3;
+  if (img) {
+    const bounds = findOpaqueBounds(img);
+    if (bounds) drawPfpSubject(ctx, img, bounds, cropArea, centerX, sunCenterY, sunRadius);
+  }
+
+  ctx.drawImage(ring, centerX - 720, sunCenterY - 720, 1440, 1440);
+  drawPfpBranding(ctx, size);
+}
+
+interface ImageBounds {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+function findOpaqueBounds(img: HTMLImageElement): ImageBounds | null {
+  const canvas = document.createElement('canvas');
+  canvas.width = img.naturalWidth;
+  canvas.height = img.naturalHeight;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return null;
+  ctx.drawImage(img, 0, 0);
+  const pixels = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+  let minX = canvas.width;
+  let minY = canvas.height;
+  let maxX = -1;
+  let maxY = -1;
+
+  for (let y = 0; y < canvas.height; y += 2) {
+    for (let x = 0; x < canvas.width; x += 2) {
+      if (pixels[(y * canvas.width + x) * 4 + 3] > 18) {
+        minX = Math.min(minX, x);
+        minY = Math.min(minY, y);
+        maxX = Math.max(maxX, x);
+        maxY = Math.max(maxY, y);
+      }
+    }
+  }
+
+  return maxX < 0 ? null : { x: minX, y: minY, width: maxX - minX + 1, height: maxY - minY + 1 };
+}
+
+function drawPfpSubject(
+  ctx: CanvasRenderingContext2D,
+  img: HTMLImageElement,
+  bounds: ImageBounds,
+  cropArea: CropArea | null,
+  centerX: number,
+  sunCenterY: number,
+  sunRadius: number
+) {
+  const maxWidth = sunRadius * 1.55;
+  const maxHeight = 1400;
+  const zoom = cropArea ? Math.min(img.naturalWidth / cropArea.width, img.naturalHeight / cropArea.height) : 1;
+  const scale = Math.min(maxWidth / bounds.width, maxHeight / bounds.height) * Math.min(zoom, 2.25);
+  const width = bounds.width * scale;
+  const height = bounds.height * scale;
+  const cropCenterX = cropArea ? cropArea.x + cropArea.width / 2 : bounds.x + bounds.width / 2;
+  const cropCenterY = cropArea ? cropArea.y + cropArea.height / 2 : bounds.y + bounds.height / 2;
+  const subjectXRatio = cropArea ? (bounds.x + bounds.width / 2 - cropCenterX) / cropArea.width : 0;
+  const subjectYRatio = cropArea ? (bounds.y + bounds.height / 2 - cropCenterY) / cropArea.height : 0;
+  const x = centerX - width / 2 + subjectXRatio * sunRadius * 2;
+  const y = Math.max(870, Math.min(2015 - height, sunCenterY - height / 2 + subjectYRatio * sunRadius * 2));
+  ctx.drawImage(img, bounds.x, bounds.y, bounds.width, bounds.height, x, y, width, height);
+}
+
+function drawPfpBranding(ctx: CanvasRenderingContext2D, size: number) {
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'top';
+  ctx.fillStyle = '#FFD21C';
+  ctx.font = '900 124px Georgia, serif';
+  ctx.fillText('HH', 82, 78);
+  ctx.fillText('GOA', 82, 198);
+  ctx.fillText('2026', 82, 318);
+
+  ctx.fillStyle = '#FF3F83';
+  ctx.strokeStyle = '#FF3F83';
+  ctx.lineWidth = 18;
+  ctx.beginPath();
+  ctx.moveTo(290, 270);
+  ctx.lineTo(325, 142);
   ctx.stroke();
+  for (let i = 0; i < 7; i++) {
+    const angle = -Math.PI + (i / 6) * Math.PI;
+    ctx.beginPath();
+    ctx.moveTo(325, 150);
+    ctx.quadraticCurveTo(325 + Math.cos(angle) * 80, 80 + Math.sin(angle) * 65, 325 + Math.cos(angle) * 145, 75 + Math.sin(angle) * 95);
+    ctx.stroke();
+  }
 
-  // Banner text
-  ctx.fillStyle = '#ffffff';
-  ctx.font = 'bold 30px "Playfair Display", Georgia, serif';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.shadowColor = 'transparent';
-  ctx.fillText('HH GOA 2026', centerX, bannerY + bannerHeight / 2 - 2);
+  ctx.font = '900 190px Georgia, serif';
+  ctx.fillStyle = '#FFD21C';
+  ctx.fillText('HACKER HOUSE', 78, 490);
+  ctx.font = '900 134px sans-serif';
+  ctx.fillStyle = '#FF3F83';
+  ctx.strokeStyle = '#FFD21C';
+  ctx.lineWidth = 12;
+  ctx.strokeText('गोवा', size / 2 - 150, 690);
+  ctx.fillText('गोवा', size / 2 - 150, 690);
 
-  // Subtitle "गोवा" in hot pink / white contrast
-  ctx.font = 'bold 20px "Plus Jakarta Sans", sans-serif';
-  ctx.fillStyle = BRAND.accentGold;
-  ctx.fillText('BUILDER EDITION', centerX, bannerY + bannerHeight + 24);
+  ctx.font = '900 48px Arial, sans-serif';
+  ctx.fillStyle = '#FFD21C';
+  ctx.fillText('—  GOA, INDIA   •   28 – 31 OCT 2026   •   BUILT IN GOA FOR BUILDERS  —', 82, 838);
 
+  ctx.save();
+  ctx.translate(1600, 80);
+  ctx.rotate(-0.12);
+  ctx.strokeStyle = '#FFD21C';
+  ctx.lineWidth = 10;
+  ctx.strokeRect(0, 0, 365, 205);
+  ctx.font = '900 48px Arial, sans-serif';
+  ctx.fillStyle = '#FFD21C';
+  ctx.fillText('BUILT IN GOA', 25, 38);
+  ctx.fillStyle = '#FF3F83';
+  ctx.fillText('FOR BUILDERS', 25, 105);
   ctx.restore();
 }
 

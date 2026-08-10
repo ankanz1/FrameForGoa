@@ -35,7 +35,7 @@ on a generic badge.
    `og:image`/`twitter:image` meta tags dynamically (`generateMetadata`
    in `app/s/page.tsx`), so the X link preview shows the actual graphic
    instead of a blank thumbnail. A pre-filled tweet intent opens with
-   `#FrameInGoa` already in the caption.
+   `# #FRAMEINGOA` already in the caption.
 
 ## Local development
 
@@ -113,6 +113,6 @@ official assets if you want to swap in the real logo mark.
 
 - [x] Live working link — deploy per steps above, then paste the URL
       into the shortlisting form: https://forms.gle/jM5hTaGvsrfEfixPA
-- [ ] Post the end result on X with **#FrameInGoa** — the app pre-fills
+- [ ] Post the end result on X with **# #FRAMEINGOA** — the app pre-fills
       this, but you still need to actually hit Tweet.
 - Deadline: 11:59pm, 13 Aug 2026. One submission per team.

@@ -29,6 +29,34 @@ function Band({ textureUrl }: BandProps) {
   const [curve] = useState(() => new THREE.CatmullRomCurve3([new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3()]));
   const [dragged, drag] = useState<THREE.Vector3 | false>(false);
 
+  // Canvas texture with the "HH GOA 26" text printed along the band
+  const [bandTexture] = useState(() => {
+    const canvas = document.createElement('canvas');
+    canvas.width = 2048;
+    canvas.height = 256;
+    const ctx = canvas.getContext('2d')!;
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#0b6839';
+    ctx.font = 'bold 140px Arial, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('HH GOA 26', canvas.width / 2, canvas.height / 2);
+    const tex = new THREE.CanvasTexture(canvas);
+    tex.wrapS = THREE.RepeatWrapping;
+    tex.colorSpace = THREE.SRGBColorSpace;
+    return tex;
+  });
+
+  // Apply band texture uniforms imperatively (R3F props are unreliable on custom ShaderMaterial)
+  useEffect(() => {
+    band.current?.material?.setValues({
+      map: bandTexture,
+      useMap: 1,
+      repeat: new THREE.Vector2(2, 1),
+    });
+  }, [bandTexture]);
+
   // Load Texture
   const [texture, setTexture] = useState<THREE.Texture | null>(null);
   useEffect(() => {
@@ -148,7 +176,7 @@ function Band({ textureUrl }: BandProps) {
         {/* @ts-ignore */}
         <meshLineGeometry />
         {/* @ts-ignore */}
-        <meshLineMaterial color="#ff2d75" depthTest={false} resolution={[width, height]} lineWidth={0.15} />
+        <meshLineMaterial color="#ffffff" map={bandTexture} useMap={1} repeat={new THREE.Vector2(2, 1)} transparent depthTest={false} sizeAttenuation={1} resolution={[width, height]} lineWidth={0.5} />
       </mesh>
     </>
   );

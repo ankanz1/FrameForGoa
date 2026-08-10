@@ -141,7 +141,7 @@ app.get('/s/:id', (req, res) => {
       
       <!-- OpenGraph / X Social Meta Tags -->
       <meta property="og:title" content="HH Goa 2026 — Builder Graphic" />
-      <meta property="og:description" content="I framed my profile for HH Goa 2026! #FrameInGoa" />
+      <meta property="og:description" content="I framed my profile for HH Goa 2026! # #FRAMEINGOA" />
       <meta property="og:image" content="${imageUrl}" />
       <meta property="og:image:type" content="image/png" />
       <meta property="og:image:width" content="800" />
@@ -150,7 +150,7 @@ app.get('/s/:id', (req, res) => {
       <meta name="twitter:card" content="summary_large_image" />
       <meta name="twitter:site" content="@HHGoa2026" />
       <meta name="twitter:title" content="HH Goa 2026 — Builder Graphic" />
-      <meta name="twitter:description" content="I framed my profile for HH Goa 2026! #FrameInGoa" />
+      <meta name="twitter:description" content="I framed my profile for HH Goa 2026! # #FRAMEINGOA" />
       <meta name="twitter:image" content="${imageUrl}" />
 
       <style>

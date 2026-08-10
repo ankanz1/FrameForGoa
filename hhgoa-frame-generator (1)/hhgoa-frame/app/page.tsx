@@ -20,9 +20,9 @@ type Step = "upload" | "crop" | "result";
 const POSTER_ASPECT = POSTER_PHOTO_AREA.width / POSTER_PHOTO_AREA.height;
 
 const CAPTION_FRAME =
-  "Locked in for Hacker House Goa 2026 🌊 built in Goa, for builders — 28–31 Oct. #FrameInGoa";
+  "Locked in for Hacker House Goa 2026 🌊 built in Goa, for builders — 28–31 Oct. # #FRAMEINGOA";
 const CAPTION_CARD =
-  "My builder ID for Hacker House Goa 2026 is ready 🏖️ 28–31 Oct, Goa. #FrameInGoa";
+  "My builder ID for Hacker House Goa 2026 is ready 🏖️ 28–31 Oct, Goa. # #FRAMEINGOA";
 
 async function fileToImageSrc(file: File): Promise<string> {
   const isHeic =

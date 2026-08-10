@@ -18,11 +18,13 @@ export const BadgeForm: React.FC<BadgeFormProps> = ({ details, onChange }) => {
     });
   };
 
-  // Auto-generate a whimsical title from name + role (reroll bumps the seed)
+  // Auto-generate a whimsical title from name + role (reroll bumps the seed).
+  // Only once the user has filled in a name AND role.
   useEffect(() => {
+    if (!details.name || !details.role) return;
     updateField(
       'title',
-      generateBuilderTitle(details.name || 'Builder', details.role || 'builder', titleSeed)
+      generateBuilderTitle(details.name, details.role, titleSeed)
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [details.name, details.role, titleSeed]);
@@ -124,7 +126,7 @@ export const BadgeForm: React.FC<BadgeFormProps> = ({ details, onChange }) => {
           <button
             type="button"
             onClick={handleRerollTitle}
-            className="text-xs text-[var(--hh-gold)] hover:underline flex items-center gap-1 font-mono cursor-pointer"
+            className="text-xs text-[var(--hh-gold)] flex items-center gap-1 font-heading cursor-pointer"
           >
             🎲 Reroll Title
           </button>
