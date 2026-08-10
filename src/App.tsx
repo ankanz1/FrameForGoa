@@ -23,7 +23,7 @@ function compressCanvasForShare(source: HTMLCanvasElement, maxBytes = 4_000_000)
   const full = source.toDataURL('image/png');
   if (full.length <= maxBytes) return full;
 
-  const scale = Math.min(1, Math.max(0.4, Math.sqrt((maxBytes * 1000) / Math.max(1, full.length))));
+  const scale = Math.min(1, Math.sqrt(maxBytes / Math.max(1, full.length)) * 0.9);
   const w = Math.max(400, Math.round(source.width * scale));
   const h = Math.max(400, Math.round(source.height * scale));
 
@@ -39,7 +39,7 @@ function compressCanvasForShare(source: HTMLCanvasElement, maxBytes = 4_000_000)
 
   let out = canvas.toDataURL('image/png');
   if (out.length > maxBytes) {
-    out = canvas.toDataURL('image/jpeg', 0.8);
+    out = canvas.toDataURL('image/jpeg', 0.78);
   }
   return out;
 }
@@ -153,13 +153,10 @@ export default function App() {
     if (!renderedDataUrl) return;
     setIsSharing(true);
 
-    const canShare = typeof navigator.share === 'function';
-
     // Open the popup synchronously within the tap gesture — but only when we'll
     // need it. Mobile browsers block window.open() fired after an await, so we
-    // open it first and navigate later. On mobile with Web Share available we
-    // skip the popup entirely and use the native share sheet instead.
-    const popup = canShare ? null : window.open('', '_blank');
+    // open it first and navigate later.
+    const popup = window.open('', '_blank');
 
     // Render a spinner into the popup immediately so it's never a blank page.
     if (popup) {
@@ -190,7 +187,7 @@ export default function App() {
 
       const data = await res.json().catch(() => ({}));
       if (!res.ok || !data.url) {
-        throw new Error(data.error || 'Upload failed');
+        throw new Error(data.error || `Upload failed (${res.status})`);
       }
 
       setShareUrl(data.url);
@@ -201,31 +198,14 @@ export default function App() {
 
       const xIntentUrl = `https://x.com/intent/tweet?text=${encodeURIComponent(shareText)}`;
 
-      // Preferred on mobile: native share sheet (includes X app).
-      if (canShare) {
-        try {
-          await navigator.share({
-            title: 'HH Goa 2026 Builder',
-            text: shareText,
-            url: data.url,
-          });
-          return;
-        } catch (shareErr) {
-          // AbortError = user cancelled; fall through to popup fallback.
-          if (!(shareErr instanceof Error && shareErr.name === 'AbortError')) {
-            console.warn('Web Share API failed, falling back to X intent', shareErr);
-          }
-        }
-      }
-
       if (popup && !popup.closed) {
         try {
           popup.location.href = xIntentUrl;
         } catch {
-          window.open(xIntentUrl, '_blank');
+          window.location.href = xIntentUrl;
         }
       } else {
-        window.open(xIntentUrl, '_blank', 'noopener');
+        window.location.href = xIntentUrl;
       }
     } catch (err) {
       console.error('Share upload failed', err);
