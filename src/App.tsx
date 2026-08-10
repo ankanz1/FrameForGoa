@@ -34,6 +34,8 @@ export default function App() {
 
   const [isGenerating, setIsGenerating] = useState(false);
   const [renderedDataUrl, setRenderedDataUrl] = useState<string | null>(null);
+  const [pfpDataUrl, setPfpDataUrl] = useState<string | null>(null);
+  const [cardDataUrl, setCardDataUrl] = useState<string | null>(null);
   const [, setShareUrl] = useState<string | null>(null);
   const [isSharing, setIsSharing] = useState(false);
   const [showCardMenu, setShowCardMenu] = useState(false);
@@ -64,6 +66,11 @@ export default function App() {
         previewCanvasRef.current = canvas;
         const dataUrl = canvas.toDataURL('image/png');
         setRenderedDataUrl(dataUrl);
+        if (mode === 'pfp') {
+          setPfpDataUrl(dataUrl);
+        } else {
+          setCardDataUrl(dataUrl);
+        }
       } catch (err) {
         console.error('Failed to draw canvas', err);
       } finally {
@@ -398,12 +405,22 @@ export default function App() {
                         <img
                           src={renderedDataUrl}
                           alt="Generated HH Goa Graphic"
-                          className="w-full h-auto max-h-[500px] object-contain rounded-lg shadow-lg"
+                          className={`w-full h-auto max-h-[500px] object-contain rounded-lg shadow-lg transition-opacity duration-300 ${isGenerating ? 'opacity-40' : 'opacity-100'}`}
                         />
                       ) : (
-                        <div className="p-8 text-[#94a3b8]">
-                          <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-[#f3c048] border-t-transparent mb-2" />
-                          <p className="text-sm">Generating your frame...</p>
+                        <div className="p-8 text-[#94a3b8]" />
+                      )}
+
+                      {isGenerating && (
+                        <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-[#063b20]/55 backdrop-blur-[2px] text-[#fef6e4]">
+                          <div className="relative flex items-center justify-center">
+                            <div className="h-20 w-20 rounded-full border-4 border-[#f3c048]/25 border-t-[#f3c048] border-r-[#ff2d75] animate-spin" />
+                            <RefreshCw className="absolute h-7 w-7 text-[#f3c048] animate-pulse" />
+                          </div>
+                          <div className="text-center">
+                            <p className="font-playfair text-lg font-bold">Generating your PFP</p>
+                            <p className="mt-1 text-xs font-mono text-[#cbd5e1]">Removing background and rendering...</p>
+                          </div>
                         </div>
                       )}
                     </div>
@@ -499,15 +516,24 @@ export default function App() {
 
               {/* Massive 3D Physics View (True 100% Full Screen) */}
               <div className="absolute inset-0 w-full h-full drop-shadow-[0_0_80px_rgba(255,45,117,0.3)] z-0">
-                <PhysicsCardPreview textureUrl={renderedDataUrl} />
+                <PhysicsCardPreview textureUrl={cardDataUrl} />
               </div>
 
               {/* Loading overlay while the ID card graphic is rendering */}
               {(isGenerating || !renderedDataUrl) && (
                 <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-[#063b20]/70 animate-fadeIn">
-                  <div className="inline-block animate-spin rounded-full h-16 w-16 border-4 border-[#f3c048] border-t-transparent" />
-                  <p className="mt-4 font-mono text-sm font-bold tracking-[0.3em] uppercase text-[#f3c048] animate-pulse">
-                    Crafting your badge...
+                  <div className="relative h-20 w-20 [perspective:500px]">
+                    <div className="absolute inset-2 rounded-xl border-2 border-[#f3c048] bg-[#08140e]/80 shadow-[0_0_25px_rgba(243,192,72,0.35)] animate-[spin_2.5s_linear_infinite]" />
+                    <div className="absolute inset-2 rounded-xl border-2 border-[#ff2d75] bg-[#08140e]/80 shadow-[0_0_25px_rgba(255,45,117,0.3)] animate-[spin_2.5s_linear_infinite_reverse]" />
+                    <div className="absolute inset-0 flex items-center justify-center text-[#f3c048]">
+                      <RefreshCw className="h-7 w-7 animate-spin" />
+                    </div>
+                  </div>
+                  <p className="mt-5 font-playfair text-lg font-bold text-[#fef6e4] animate-pulse">
+                    Generating your 3D ID card
+                  </p>
+                  <p className="mt-1 font-mono text-xs text-[#cbd5e1]">
+                    Building your badge...
                   </p>
                 </div>
               )}

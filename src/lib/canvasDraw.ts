@@ -34,7 +34,7 @@ export async function drawCanvas(
   let imgElement: HTMLImageElement | null = null;
   if (imageSrc) {
     try {
-      const source = mode === 'pfp' ? await removeBackground(imageSrc) : imageSrc;
+      const source = await removeBackground(imageSrc);
       imgElement = await loadImage(source);
     } catch (e) {
       console.warn('Could not load user image', e);
@@ -62,7 +62,7 @@ export async function drawCanvas(
     // 800 x 1100 Portrait Builder Badge ID Card
     canvas.width = 800;
     canvas.height = 1100;
-    drawBuilderBadge(ctx, imgElement, cropArea, badgeDetails, studioLogoImg);
+    await drawBuilderBadge(ctx, imgElement, cropArea, badgeDetails, studioLogoImg);
   }
 
   return canvas;
@@ -219,7 +219,7 @@ function drawPfpBranding(ctx: CanvasRenderingContext2D, size: number) {
 /**
  * Draws the Builder Badge ID Card (800x1100)
  */
-function drawBuilderBadge(
+async function drawBuilderBadge(
   ctx: CanvasRenderingContext2D,
   img: HTMLImageElement | null,
   cropArea: CropArea | null,
@@ -228,201 +228,136 @@ function drawBuilderBadge(
 ) {
   const width = 800;
   const height = 1100;
+  const margin = 18;
+  const ring = await loadImage('/assets/hhgoa/brush-ring.svg');
 
-  // 1. Dark Tropical Canvas Background
-  ctx.fillStyle = BRAND.bgDark;
+  ctx.fillStyle = '#0D5B3A';
   ctx.fillRect(0, 0, width, height);
-
   drawBackgroundGrid(ctx, width, height);
 
-  // 2. Outer Card Container (with rounded corners and gold border)
-  const margin = 36;
-  const cardWidth = width - margin * 2;
-  const cardHeight = height - margin * 2;
-
-  ctx.save();
-  // Card base
-  ctx.fillStyle = BRAND.bgCard;
-  ctx.shadowColor = 'rgba(0, 0, 0, 0.7)';
-  ctx.shadowBlur = 30;
-  ctx.shadowOffsetY = 10;
-  ctx.beginPath();
-  ctx.roundRect(margin, margin, cardWidth, cardHeight, 28);
-  ctx.fill();
-
-  // Card Outer Double Border
-  ctx.strokeStyle = BRAND.accentGold;
-  ctx.lineWidth = 4;
+  ctx.strokeStyle = '#276b48';
+  ctx.lineWidth = 8;
+  ctx.roundRect(margin, margin, width - margin * 2, height - margin * 2, 36);
   ctx.stroke();
 
-  ctx.strokeStyle = 'rgba(243, 192, 72, 0.3)';
-  ctx.lineWidth = 2;
-  ctx.beginPath();
-  ctx.roundRect(margin + 8, margin + 8, cardWidth - 16, cardHeight - 16, 20);
-  ctx.stroke();
-  ctx.restore();
-
-  // 3. Card Header (Sunrise over ocean + HH Goa brand text & Studio Logo)
-  drawHeaderArtwork(ctx, margin, margin, cardWidth, 180, studioLogoImg);
-
-  // 4. Lanyard Slot Notch at Top Center
-  ctx.save();
-  ctx.fillStyle = BRAND.darkGreen;
-  ctx.beginPath();
-  ctx.roundRect(width / 2 - 45, margin + 12, 90, 16, 8);
-  ctx.fill();
-  ctx.strokeStyle = BRAND.accentGold;
-  ctx.lineWidth = 2;
-  ctx.stroke();
-  ctx.restore();
-
-  // 5. User Photo Frame (Portrait 280x320 with rounded corners)
-  const photoX = width / 2 - 140;
-  const photoY = 240;
-  const photoW = 280;
-  const photoH = 320;
-
-  ctx.save();
-  // Photo frame backing shadow
-  ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
-  ctx.shadowBlur = 12;
-  ctx.shadowOffsetY = 4;
-  ctx.fillStyle = '#122e20';
-  ctx.beginPath();
-  ctx.roundRect(photoX, photoY, photoW, photoH, 20);
-  ctx.fill();
-  ctx.restore();
-
-  // Clip user photo
-  ctx.save();
-  ctx.beginPath();
-  ctx.roundRect(photoX, photoY, photoW, photoH, 20);
-  ctx.clip();
-
-  if (img && cropArea) {
-    ctx.drawImage(
-      img,
-      cropArea.x,
-      cropArea.y,
-      cropArea.width,
-      cropArea.height,
-      photoX,
-      photoY,
-      photoW,
-      photoH
-    );
-  } else if (img) {
-    ctx.drawImage(img, photoX, photoY, photoW, photoH);
-  } else {
-    // Placeholder avatar
-    ctx.fillStyle = '#1c3d2f';
-    ctx.fillRect(photoX, photoY, photoW, photoH);
-    ctx.fillStyle = BRAND.accentGold;
-    ctx.font = 'bold 80px "Playfair Display", Georgia, serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText('GOA', photoX + photoW / 2, photoY + photoH / 2);
-  }
-  ctx.restore();
-
-  // Photo frame gold border & corner flourishes
-  ctx.beginPath();
-  ctx.roundRect(photoX, photoY, photoW, photoH, 20);
-  ctx.lineWidth = 4;
-  ctx.strokeStyle = BRAND.accentGold;
-  ctx.stroke();
-
-  // Checkerboard accent strips on photo sides
-  drawCheckerboardStrip(ctx, photoX - 16, photoY, 12, photoH, 6);
-  drawCheckerboardStrip(ctx, photoX + photoW + 4, photoY, 12, photoH, 6);
-
-  // 6. Name and Handle Section
-  let currentY = photoY + photoH + 36;
-
-  ctx.textAlign = 'center';
+  ctx.fillStyle = '#FFD21C';
+  ctx.textAlign = 'left';
   ctx.textBaseline = 'top';
-
-  // Name
-  ctx.fillStyle = BRAND.cream;
-  const displayName = (badge.name || 'ANONYMOUS BUILDER').toUpperCase();
-  ctx.font = 'bold 36px "Playfair Display", Georgia, serif';
-  ctx.fillText(truncateText(ctx, displayName, cardWidth - 80), width / 2, currentY);
-
-  currentY += 46;
-
-  // Handle / Social
-  if (badge.handle) {
-    const handleText = badge.handle.startsWith('@') ? badge.handle : `@${badge.handle}`;
-    ctx.fillStyle = BRAND.accentGold;
-    ctx.font = 'bold 22px "IBM Plex Mono", monospace';
-    ctx.fillText(handleText, width / 2, currentY);
-    currentY += 36;
-  }
-
-  // 7. Whimsical Builder Title Banner
-  const titleBoxW = cardWidth - 100;
-  const titleBoxH = 50;
-  const titleBoxX = width / 2 - titleBoxW / 2;
+  ctx.font = '900 43px Georgia, serif';
+  ctx.fillText('HH', 48, 42);
+  ctx.fillText('GOA', 48, 84);
+  ctx.fillText('2026', 48, 126);
+  drawPalmAccent(ctx, 142, 122, 52);
 
   ctx.save();
-  ctx.fillStyle = 'rgba(255, 45, 117, 0.15)';
-  ctx.beginPath();
-  ctx.roundRect(titleBoxX, currentY, titleBoxW, titleBoxH, 12);
-  ctx.fill();
-
-  ctx.strokeStyle = BRAND.accentPink;
-  ctx.lineWidth = 2;
-  ctx.stroke();
-
-  ctx.fillStyle = BRAND.accentPink;
-  ctx.font = 'bold 20px "IBM Plex Mono", monospace';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  const displayTitle = badge.title || 'Full-Stack Wizard of Goa';
-  ctx.fillText(truncateText(ctx, displayTitle, titleBoxW - 24), width / 2, currentY + titleBoxH / 2);
+  ctx.translate(590, 38);
+  ctx.rotate(-0.12);
+  ctx.strokeStyle = '#FFD21C';
+  ctx.lineWidth = 4;
+  ctx.strokeRect(0, 0, 180, 78);
+  ctx.font = '900 19px Arial, sans-serif';
+  ctx.fillStyle = '#FFD21C';
+  ctx.fillText('BUILT IN GOA', 12, 16);
+  ctx.fillStyle = '#FF3F83';
+  ctx.fillText('FOR BUILDERS', 12, 43);
   ctx.restore();
 
-  currentY += titleBoxH + 30;
+  ctx.fillStyle = '#FFD21C';
+  ctx.font = '900 72px Georgia, serif';
+  ctx.fillText('HACKER', 42, 208);
+  ctx.fillText('HOUSE', 410, 208);
+  ctx.font = '900 39px sans-serif';
+  ctx.fillStyle = '#FF3F83';
+  ctx.strokeStyle = '#FFD21C';
+  ctx.lineWidth = 5;
+  ctx.strokeText('गोवा', 363, 245);
+  ctx.fillText('गोवा', 363, 245);
 
-  // 8. Grid Information Fields (Track, Role, Company)
-  const gridY = currentY;
-  const colWidth = (cardWidth - 80) / 2;
-  const leftX = margin + 40;
-  const rightX = leftX + colWidth;
+  ctx.font = '900 18px Arial, sans-serif';
+  ctx.fillStyle = '#FFD21C';
+  ctx.fillText('—  GOA, INDIA   •   28 – 31 OCT 2026   •   BUILT IN GOA FOR BUILDERS  —', 42, 310);
 
-  // Column 1: TRACK / STACK
-  drawDetailItem(
-    ctx,
-    'TRACK / STACK',
-    badge.track || 'AI & Full-Stack',
-    leftX,
-    gridY,
-    colWidth
-  );
+  const sunX = width / 2;
+  const sunY = 535;
+  const sunRadius = 210;
+  ctx.fillStyle = '#FFD21C';
+  ctx.beginPath();
+  ctx.arc(sunX, sunY, sunRadius, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.drawImage(ring, sunX - 250, sunY - 250, 500, 500);
 
-  // Column 2: ROLE
-  drawDetailItem(
-    ctx,
-    'ROLE',
-    badge.role || 'Hacker / Founder',
-    rightX,
-    gridY,
-    colWidth
-  );
+  if (img) {
+    const bounds = findOpaqueBounds(img);
+    if (bounds) {
+      const scale = Math.min(390 / bounds.width, 455 / bounds.height);
+      const subjectW = bounds.width * scale;
+      const subjectH = bounds.height * scale;
+      const subjectX = sunX - subjectW / 2;
+      const subjectY = sunY - subjectH * 0.32;
+      ctx.drawImage(img, bounds.x, bounds.y, bounds.width, bounds.height, subjectX, subjectY, subjectW, subjectH);
+    }
+  }
 
-  // Row 2: AFFILIATION / PROJECT
-  drawDetailItem(
-    ctx,
-    'PROJECT / AFFILIATION',
-    badge.company || 'Building in Public',
-    leftX,
-    gridY + 68,
-    cardWidth - 80
-  );
+  ctx.textAlign = 'center';
+  ctx.fillStyle = '#F7F1DF';
+  ctx.font = '900 35px Arial, sans-serif';
+  ctx.fillText((badge.name || 'ANONYMOUS BUILDER').toUpperCase(), width / 2, 760);
+  ctx.fillStyle = '#FF3F83';
+  ctx.font = '900 24px Arial, sans-serif';
+  ctx.fillText((badge.role || 'BUILDER').toUpperCase(), width / 2, 800);
 
-  // 9. Card Footer Bar with Barcode / Ticket Notch & Stamp
-  const footerY = height - margin - 110;
-  drawBadgeFooter(ctx, margin, footerY, cardWidth, 110);
+  ctx.strokeStyle = '#FFD21C';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(60, 842);
+  ctx.lineTo(740, 842);
+  ctx.stroke();
+
+  const stack = badge.track || 'AI & FULL-STACK';
+  ctx.fillStyle = '#F7F1DF';
+  ctx.font = '700 18px Arial, sans-serif';
+  ctx.fillText(truncateText(ctx, stack.toUpperCase(), 690), width / 2, 866);
+
+  ctx.strokeStyle = '#FFD21C';
+  ctx.lineWidth = 2;
+  ctx.strokeRect(42, 905, 716, 58);
+  ctx.fillStyle = '#FFD21C';
+  ctx.font = '700 18px Arial, sans-serif';
+  ctx.fillText(`“${truncateText(ctx, badge.title || 'I BUILD INTERFACES THAT INSPIRE', 650)}”`, width / 2, 925);
+
+  ctx.textAlign = 'left';
+  ctx.fillStyle = '#FF3F83';
+  ctx.font = 'italic 38px Georgia, serif';
+  ctx.fillText('#FrameInGoa', 145, 1000);
+  ctx.fillStyle = '#FFD21C';
+  ctx.font = '900 33px Georgia, serif';
+  ctx.fillText('HH', 675, 1000);
+  ctx.fillStyle = '#FFD21C';
+  ctx.font = '900 13px Arial, sans-serif';
+  ctx.fillText('GOA 2026', 664, 1040);
+}
+
+function drawPalmAccent(ctx: CanvasRenderingContext2D, x: number, y: number, size: number) {
+  ctx.save();
+  ctx.strokeStyle = '#FF3F83';
+  ctx.lineWidth = 5;
+  ctx.beginPath();
+  ctx.moveTo(x, y + size);
+  ctx.lineTo(x + 7, y + 18);
+  ctx.stroke();
+  for (let index = 0; index < 6; index++) {
+    const angle = -Math.PI + (index / 5) * Math.PI;
+    ctx.beginPath();
+    ctx.moveTo(x + 7, y + 20);
+    ctx.quadraticCurveTo(
+      x + 7 + Math.cos(angle) * size * 0.35,
+      y - Math.sin(angle) * size * 0.25,
+      x + 7 + Math.cos(angle) * size * 0.7,
+      y + Math.sin(angle) * size * 0.2
+    );
+    ctx.stroke();
+  }
+  ctx.restore();
 }
 
 /**
