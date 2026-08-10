@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Download, Share2, Sparkles, Check, Twitter, Copy, RefreshCw, ArrowLeft, X, Menu } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { Mode, BadgeDetails, CropArea } from './types';
-import { drawCanvas } from './lib/canvasDraw';
+import { drawCanvas, canvasToBlob } from './lib/canvasDraw';
 import { PhotoCropper } from './components/PhotoCropper';
 import { BadgeForm } from './components/BadgeForm';
 import { PresetAvatars } from './components/PresetAvatars';
@@ -74,9 +74,10 @@ export default function App() {
     };
   }, [mode, imageSrc, cropArea, badgeDetails]);
 
-  // Download high-resolution PNG
-  const handleDownload = () => {
-    if (!renderedDataUrl) return;
+  // Download high-resolution PNG via canvas.toBlob → real file download
+  const handleDownload = async () => {
+    const canvas = previewCanvasRef.current;
+    if (!canvas && !renderedDataUrl) return;
 
     // Trigger celebratory confetti burst
     confetti({
@@ -86,17 +87,27 @@ export default function App() {
       colors: ['#f3c048', '#ff2d75', '#ffffff'],
     });
 
-    const link = document.createElement('a');
-    const filename =
-      mode === 'pfp'
-        ? 'hh-goa-2026-pfp-frame.png'
-        : `hh-goa-2026-builder-badge-${(badgeDetails.name || 'builder')
-          .toLowerCase()
-          .replace(/\s+/g, '-')}.png`;
+    try {
+      const blob = canvas ? await canvasToBlob(canvas) : await (await fetch(renderedDataUrl!)).blob();
+      const url = URL.createObjectURL(blob);
 
-    link.download = filename;
-    link.href = renderedDataUrl;
-    link.click();
+      const link = document.createElement('a');
+      const filename =
+        mode === 'pfp'
+          ? 'hh-goa-2026-pfp-frame.png'
+          : `hh-goa-2026-builder-badge-${(badgeDetails.name || 'builder')
+            .toLowerCase()
+            .replace(/\s+/g, '-')}.png`;
+
+      link.download = filename;
+      link.href = url;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Failed to export PNG', err);
+    }
   };
 
   // Upload graphic & prepare share intent on X

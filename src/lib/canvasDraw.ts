@@ -803,3 +803,15 @@ function loadImage(src: string): Promise<HTMLImageElement> {
     img.src = src;
   });
 }
+
+/**
+ * Export a canvas as a PNG Blob at native resolution
+ */
+export async function canvasToBlob(canvas: HTMLCanvasElement): Promise<Blob> {
+  return new Promise((resolve, reject) => {
+    canvas.toBlob((blob) => {
+      if (blob) resolve(blob);
+      else reject(new Error('canvas.toBlob returned null'));
+    }, 'image/png');
+  });
+}

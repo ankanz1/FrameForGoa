@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Sparkles } from 'lucide-react';
 import { BadgeDetails } from '../types';
-import { getRandomBuilderTitle } from '../lib/builderTitle';
+import { generateBuilderTitle } from '../lib/builderTitle';
 
 interface BadgeFormProps {
   details: BadgeDetails;
@@ -9,6 +9,8 @@ interface BadgeFormProps {
 }
 
 export const BadgeForm: React.FC<BadgeFormProps> = ({ details, onChange }) => {
+  const [titleSeed, setTitleSeed] = useState(0);
+
   const updateField = (field: keyof BadgeDetails, value: string) => {
     onChange({
       ...details,
@@ -16,8 +18,17 @@ export const BadgeForm: React.FC<BadgeFormProps> = ({ details, onChange }) => {
     });
   };
 
+  // Auto-generate a whimsical title from name + role (reroll bumps the seed)
+  useEffect(() => {
+    updateField(
+      'title',
+      generateBuilderTitle(details.name || 'Builder', details.role || 'builder', titleSeed)
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [details.name, details.role, titleSeed]);
+
   const handleRerollTitle = () => {
-    updateField('title', getRandomBuilderTitle());
+    setTitleSeed((s) => s + 1);
   };
 
   return (
