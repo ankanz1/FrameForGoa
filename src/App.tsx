@@ -17,6 +17,33 @@ const XLogo = ({ className }: { className?: string }) => (
   </svg>
 );
 
+// Vercel serverless functions cap request bodies at ~4.5MB, so shrink the
+// rendered canvas before upload by re-encoding onto a smaller canvas.
+function compressCanvasForShare(source: HTMLCanvasElement, maxBytes = 4_000_000): string {
+  const full = source.toDataURL('image/png');
+  if (full.length <= maxBytes) return full;
+
+  const scale = Math.min(1, Math.max(0.4, Math.sqrt((maxBytes * 1000) / Math.max(1, full.length))));
+  const w = Math.max(400, Math.round(source.width * scale));
+  const h = Math.max(400, Math.round(source.height * scale));
+
+  const canvas = document.createElement('canvas');
+  canvas.width = w;
+  canvas.height = h;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return full;
+
+  ctx.fillStyle = '#08140e';
+  ctx.fillRect(0, 0, w, h);
+  ctx.drawImage(source, 0, 0, w, h);
+
+  let out = canvas.toDataURL('image/png');
+  if (out.length > maxBytes) {
+    out = canvas.toDataURL('image/jpeg', 0.8);
+  }
+  return out;
+}
+
 export default function App() {
   const [mode, setMode] = useState<Mode>('pfp');
   const [isStudioOpen, setIsStudioOpen] = useState(false);
@@ -150,10 +177,15 @@ export default function App() {
     }
 
     try {
+      const sourceCanvas = previewCanvasRef.current;
       const res = await fetch('/api/upload', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ image: renderedDataUrl }),
+        body: JSON.stringify({
+          image: sourceCanvas
+            ? compressCanvasForShare(sourceCanvas)
+            : renderedDataUrl,
+        }),
       });
 
       const data = await res.json().catch(() => ({}));

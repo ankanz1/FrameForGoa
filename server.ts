@@ -43,6 +43,22 @@ setInterval(() => {
   }
 }, 60 * 60 * 1000);
 
+// Resolve the deployment URL from the request so share links always point
+// at the right host (falls back to APP_URL if explicitly set).
+function appUrlFor(req: express.Request): string {
+  if (process.env.APP_URL) return process.env.APP_URL;
+  const proto =
+    req.headers['x-forwarded-proto']?.toString().split(',')[0] || 'http';
+  return `${proto}://${req.headers.host || `localhost:${PORT}`}`;
+}
+
+// Cloudinary public URL reconstruction — durable across serverless cold
+// starts because it is derived from the deterministic public_id we assign.
+function cloudinaryImageUrlFor(id: string): string | null {
+  if (!isCloudinaryConfigured()) return null;
+  return `https://res.cloudinary.com/${process.env.CLOUDINARY_CLOUD_NAME}/image/upload/hhgoa-2026/${id}.png`;
+}
+
 // API endpoint to store a generated graphic & return shareable URL
 app.post('/api/upload', async (req, res) => {
   try {
@@ -78,7 +94,7 @@ app.post('/api/upload', async (req, res) => {
       createdAt: Date.now(),
     });
 
-    const appUrl = process.env.APP_URL || `http://localhost:${PORT}`;
+    const appUrl = appUrlFor(req);
     const shareUrl = `${appUrl}/s/${id}`;
 
     res.json({ id, url: shareUrl, rawImageUrl: `${appUrl}/api/image/${id}.png` });
@@ -88,11 +104,18 @@ app.post('/api/upload', async (req, res) => {
   }
 });
 
-// Resolve the public image URL for a graphic (Cloudinary when available)
-function imageUrlFor(id: string) {
+// Resolve the public image URL for a graphic. Prefers the cached Cloudinary
+// URL, then the deterministic Cloudinary URL, then the local endpoint.
+function imageUrlFor(id: string, req: express.Request | null = null) {
   const record = graphicsStore.get(id);
   if (record?.remoteUrl) return record.remoteUrl;
-  const appUrl = process.env.APP_URL || `http://localhost:${PORT}`;
+
+  const cloudUrl = cloudinaryImageUrlFor(id);
+  if (cloudUrl) return cloudUrl;
+
+  const appUrl = appUrlFor(
+    req || ({ headers: { host: undefined } } as express.Request)
+  );
   return `${appUrl}/api/image/${id}.png`;
 }
 
@@ -101,16 +124,17 @@ app.get('/api/image/:id.png', (req, res) => {
   const id = req.params.id;
   const record = graphicsStore.get(id);
 
-  if (!record) {
-    return res.status(404).send('Image not found or expired');
-  }
-
-  if (record.remoteUrl) {
+  const remoteUrl = record?.remoteUrl || cloudinaryImageUrlFor(id);
+  if (remoteUrl) {
     res.writeHead(302, {
-      Location: record.remoteUrl,
+      Location: remoteUrl,
       'Cache-Control': 'public, max-age=86400',
     });
     return res.end();
+  }
+
+  if (!record?.dataUrl) {
+    return res.status(404).send('Image not found or expired');
   }
 
   const base64Data = record.dataUrl.replace(/^data:image\/\w+;base64,/, '');
@@ -128,8 +152,7 @@ app.get('/api/image/:id.png', (req, res) => {
 app.get('/s/:id', (req, res) => {
   const id = req.params.id;
   const record = graphicsStore.get(id);
-  const appUrl = process.env.APP_URL || `http://localhost:${PORT}`;
-  const imageUrl = imageUrlFor(id);
+  const imageUrl = imageUrlFor(id, req);
 
   const html = `
     <!DOCTYPE html>
@@ -138,7 +161,7 @@ app.get('/s/:id', (req, res) => {
       <meta charset="UTF-8" />
       <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       <title>HH Goa 2026 — Builder Graphic</title>
-      
+
       <!-- OpenGraph / X Social Meta Tags -->
       <meta property="og:title" content="HH Goa 2026 — Builder Graphic" />
       <meta property="og:description" content="I framed my profile for HH Goa 2026! # #FRAMEINGOA" />
@@ -146,7 +169,7 @@ app.get('/s/:id', (req, res) => {
       <meta property="og:image:type" content="image/png" />
       <meta property="og:image:width" content="800" />
       <meta property="og:image:height" content="1100" />
-      
+
       <meta name="twitter:card" content="summary_large_image" />
       <meta name="twitter:site" content="@HHGoa2026" />
       <meta name="twitter:title" content="HH Goa 2026 — Builder Graphic" />
@@ -195,7 +218,7 @@ app.get('/s/:id', (req, res) => {
       <div class="container">
         <h1>HH Goa 2026 Builder Frame</h1>
         ${
-          record
+          record || cloudinaryImageUrlFor(id)
             ? `<img src="${imageUrl}" alt="HH Goa 2026 Graphic" />`
             : `<p>Graphic expired or not found. Create yours below!</p>`
         }
@@ -210,7 +233,7 @@ app.get('/s/:id', (req, res) => {
   res.send(html);
 });
 
-// Vite integration / Static distribution
+// Vite integration / Static distribution (local & self-hosted runs only)
 async function main() {
   if (process.env.NODE_ENV !== 'production') {
     const { createServer: createViteServer } = await import('vite');
@@ -232,4 +255,11 @@ async function main() {
   });
 }
 
-main().catch(console.error);
+// Only listen when executed directly (local dev or self-hosted `npm start`).
+// On Vercel the dependency-injected VERCEL env var is set, and the app is
+// imported & exported via api/index.ts for the @vercel/node runtime instead.
+if (!process.env.VERCEL) {
+  main().catch(console.error);
+}
+
+export default app;
