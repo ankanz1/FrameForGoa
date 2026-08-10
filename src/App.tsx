@@ -209,7 +209,7 @@ export default function App() {
               </div>
 
               <div className="mt-12 font-playfair text-2xl sm:text-4xl text-[#fef6e4] italic font-bold tracking-wide drop-shadow-lg animate-pulse">
-                Goa Wale Beach Peee🥳
+                Goa Wale Beach Peee🤘
               </div>
             </div>
 
