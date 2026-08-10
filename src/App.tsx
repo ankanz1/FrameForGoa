@@ -19,11 +19,11 @@ const XLogo = ({ className }: { className?: string }) => (
 
 // Vercel serverless functions cap request bodies at ~4.5MB, so shrink the
 // rendered canvas before upload by re-encoding onto a smaller canvas.
-function compressCanvasForShare(source: HTMLCanvasElement, maxBytes = 4_000_000): string {
+function compressCanvasForShare(source: HTMLCanvasElement, maxBytes = 2_500_000): string {
   const full = source.toDataURL('image/png');
   if (full.length <= maxBytes) return full;
 
-  const scale = Math.min(1, Math.sqrt(maxBytes / Math.max(1, full.length)) * 0.9);
+  const scale = Math.min(1, Math.sqrt(maxBytes / Math.max(1, full.length)) * 0.85);
   const w = Math.max(400, Math.round(source.width * scale));
   const h = Math.max(400, Math.round(source.height * scale));
 
@@ -37,9 +37,9 @@ function compressCanvasForShare(source: HTMLCanvasElement, maxBytes = 4_000_000)
   ctx.fillRect(0, 0, w, h);
   ctx.drawImage(source, 0, 0, w, h);
 
-  let out = canvas.toDataURL('image/png');
-  if (out.length > maxBytes) {
-    out = canvas.toDataURL('image/jpeg', 0.78);
+  let out = canvas.toDataURL('image/jpeg', 0.78);
+  for (let quality = 0.68; out.length > maxBytes && quality >= 0.42; quality -= 0.08) {
+    out = canvas.toDataURL('image/jpeg', quality);
   }
   return out;
 }
@@ -152,25 +152,17 @@ export default function App() {
   const handleShareToX = async () => {
     if (!renderedDataUrl) return;
     setIsSharing(true);
+    const fallbackText = `I just created my official HH Goa 2026 ${mode === 'pfp' ? 'PFP Frame' : 'Builder Badge'
+      }! 🌴🔥\n\n#FrameInGoa #HHGoa2026 @HHGoa2026`;
+    const initialXUrl = `https://x.com/intent/post?text=${encodeURIComponent(fallbackText)}`;
 
-    // Open the popup synchronously within the tap gesture — but only when we'll
-    // need it. Mobile browsers block window.open() fired after an await, so we
-    // open it first and navigate later.
-    const popup = window.open('', '_blank');
-
-    // Render a spinner into the popup immediately so it's never a blank page.
-    if (popup) {
-      try {
-        popup.document.write(
-          '<!doctype html><html><body style="margin:0;background:#08140e;display:flex;align-items:center;justify-content:center;height:100vh;flex-direction:column;gap:16px;font-family:system-ui;-webkit-font-smoothing:antialiased">' +
-            '<div style="width:42px;height:42px;border-radius:50%;border:4px solid rgba(243,192,72,.25);border-top-color:#f3c048;animation:spin 1s linear infinite"></div>' +
-            '<p style="color:#fef6e4;font-size:14px;margin:0">Preparing your HH Goa share…</p>' +
-            '<style>@keyframes spin{to{transform:rotate(360deg)}}</style></body></html>'
-        );
-        popup.document.close();
-      } catch {
-        // Popup already navigated or write blocked; ignore.
-      }
+    // Open X immediately during the tap gesture so mobile browsers do not
+    // block the compose page while the optional upload runs in the background.
+    const popup = window.open(initialXUrl, '_blank');
+    if (!popup) {
+      setIsSharing(false);
+      window.location.href = initialXUrl;
+      return;
     }
 
     try {
@@ -196,27 +188,9 @@ export default function App() {
       const shareText = `I just created my official HH Goa 2026 ${mode === 'pfp' ? 'PFP Frame' : 'Builder Badge'
         }! 🌴🔥\n\nCheck it out & create yours:\n${data.url}\n\n#FrameInGoa #HHGoa2026 @HHGoa2026`;
 
-      const xIntentUrl = `https://x.com/intent/tweet?text=${encodeURIComponent(shareText)}`;
-
-      if (popup && !popup.closed) {
-        try {
-          popup.location.href = xIntentUrl;
-        } catch {
-          window.location.href = xIntentUrl;
-        }
-      } else {
-        window.location.href = xIntentUrl;
-      }
+      popup.location.href = `https://x.com/intent/post?text=${encodeURIComponent(shareText)}`;
     } catch (err) {
       console.error('Share upload failed', err);
-      if (popup && !popup.closed) {
-        try {
-          popup.close();
-        } catch {
-          // ignore
-        }
-      }
-      alert('Could not prepare your X post. Please try again.');
     } finally {
       setIsSharing(false);
     }
