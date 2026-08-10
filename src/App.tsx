@@ -64,6 +64,17 @@ async function compressImageForShare(imageSrc: string, maxBytes = 2_500_000): Pr
   return compressCanvasForShare(canvas, maxBytes);
 }
 
+function dataUrlToFile(dataUrl: string, filename: string): File {
+  const [header, encoded] = dataUrl.split(',', 2);
+  const mime = header.match(/data:(.*?);base64/)?.[1] || 'image/png';
+  const bytes = atob(encoded);
+  const buffer = new Uint8Array(bytes.length);
+  for (let index = 0; index < bytes.length; index++) {
+    buffer[index] = bytes.charCodeAt(index);
+  }
+  return new File([buffer], filename, { type: mime });
+}
+
 export default function App() {
   const [mode, setMode] = useState<Mode>('pfp');
   const [isStudioOpen, setIsStudioOpen] = useState(false);
@@ -174,6 +185,28 @@ export default function App() {
     setIsSharing(true);
     const fallbackText = `I just created my official HH Goa 2026 ${shareMode === 'pfp' ? 'PFP Frame' : 'Builder Badge'
       }! 🌴🔥\n\n#FrameInGoa #HHGoa2026 @HHGoa2026`;
+
+    // On supported mobile browsers this attaches the actual generated image.
+    const filename = shareMode === 'pfp' ? 'HH-Goa-PFP.png' : 'HH-Goa-ID-Card.png';
+    const imageFile = dataUrlToFile(shareImage, filename);
+    if (navigator.canShare?.({ files: [imageFile] })) {
+      try {
+        await navigator.share({
+          files: [imageFile],
+          title: 'HH Goa 2026 Builder',
+          text: fallbackText,
+        });
+        setIsSharing(false);
+        return;
+      } catch (error) {
+        if (error instanceof Error && error.name === 'AbortError') {
+          setIsSharing(false);
+          return;
+        }
+        console.warn('Image share unavailable, using X link fallback', error);
+      }
+    }
+
     const initialXUrl = `https://x.com/intent/post?text=${encodeURIComponent(fallbackText)}`;
 
     // Open X immediately during the tap gesture so mobile browsers do not
