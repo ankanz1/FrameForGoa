@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Download, Share2, Sparkles, Check, Twitter, Copy, RefreshCw, ArrowLeft, X, Menu } from 'lucide-react';
+import { Download, Share2, Sparkles, RefreshCw, ArrowLeft, X, Menu } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { Mode, BadgeDetails, CropArea } from './types';
 import { drawCanvas, canvasToBlob } from './lib/canvasDraw';
@@ -9,8 +9,13 @@ import { PresetAvatars } from './components/PresetAvatars';
 import { getRandomBuilderTitle } from './lib/builderTitle';
 import { CountdownTimer } from './components/CountdownTimer';
 import { MarqueeTicker } from './components/MarqueeTicker';
-import { GoaFeatures } from './components/GoaFeatures';
 import { PhysicsCardPreview } from './components/PhysicsCardPreview';
+
+const XLogo = ({ className }: { className?: string }) => (
+  <svg viewBox="0 0 24 24" aria-hidden="true" className={className} fill="currentColor">
+    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24h-6.657l-5.214-6.817-5.964 6.817H1.684l7.73-8.835L1.258 2.25H8.08l4.713 6.231 5.45-6.231Zm-1.161 17.52h1.833L7.084 4.126H5.117L17.083 19.77Z" />
+  </svg>
+);
 
 export default function App() {
   const [mode, setMode] = useState<Mode>('pfp');
@@ -19,19 +24,20 @@ export default function App() {
   const [cropArea, setCropArea] = useState<CropArea | null>(null);
 
   const [badgeDetails, setBadgeDetails] = useState<BadgeDetails>({
-    name: 'Ankan Mukherjee',
-    handle: '@ankan_m',
-    role: 'Full-Stack Hacker',
-    title: 'Autonomous Wizard of Goa',
-    track: 'AI & Agents',
-    company: 'HH Goa 2026',
+    name: '',
+    handle: '',
+    role: '',
+    title: '',
+    track: '',
+    company: '',
   });
 
   const [isGenerating, setIsGenerating] = useState(false);
   const [renderedDataUrl, setRenderedDataUrl] = useState<string | null>(null);
-  const [shareUrl, setShareUrl] = useState<string | null>(null);
+  const [pfpDataUrl, setPfpDataUrl] = useState<string | null>(null);
+  const [cardDataUrl, setCardDataUrl] = useState<string | null>(null);
+  const [, setShareUrl] = useState<string | null>(null);
   const [isSharing, setIsSharing] = useState(false);
-  const [copied, setCopied] = useState(false);
   const [showCardMenu, setShowCardMenu] = useState(false);
 
   const previewCanvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -60,6 +66,11 @@ export default function App() {
         previewCanvasRef.current = canvas;
         const dataUrl = canvas.toDataURL('image/png');
         setRenderedDataUrl(dataUrl);
+        if (mode === 'pfp') {
+          setPfpDataUrl(dataUrl);
+        } else {
+          setCardDataUrl(dataUrl);
+        }
       } catch (err) {
         console.error('Failed to draw canvas', err);
       } finally {
@@ -94,7 +105,7 @@ export default function App() {
       const link = document.createElement('a');
       const filename =
         mode === 'pfp'
-          ? 'hh-goa-2026-pfp-frame.png'
+          ? 'HH-Goa-PFP.png'
           : `hh-goa-2026-builder-badge-${(badgeDetails.name || 'builder')
             .toLowerCase()
             .replace(/\s+/g, '-')}.png`;
@@ -126,7 +137,7 @@ export default function App() {
       if (data.url) {
         setShareUrl(data.url);
 
-        // Pre-fill tweet caption with #FrameInGoa hashtag & share URL
+        // Pre-fill the X post with the generated share URL and campaign hashtags
         const tweetText = encodeURIComponent(
           `I just created my official HH Goa 2026 ${mode === 'pfp' ? 'PFP Frame' : 'Builder Badge'
           }! 🌴🔥\n\nCheck it out & create yours:\n${data.url}\n\n#FrameInGoa #HHGoa2026 @HHGoa2026`
@@ -139,13 +150,6 @@ export default function App() {
     } finally {
       setIsSharing(false);
     }
-  };
-
-  const handleCopyLink = () => {
-    if (!shareUrl) return;
-    navigator.clipboard.writeText(shareUrl);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2500);
   };
 
   return (
@@ -205,7 +209,7 @@ export default function App() {
               </div>
 
               <div className="mt-12 font-playfair text-2xl sm:text-4xl text-[#fef6e4] italic font-bold tracking-wide drop-shadow-lg animate-pulse">
-                Goa Wale Beach Paadh🥳
+                Goa Wale Beach Peee🤘
               </div>
             </div>
 
@@ -217,17 +221,15 @@ export default function App() {
 
         {/* Main App Content Area (Full Page Section) */}
         <main id="main-section" className="max-w-6xl mx-auto px-4 min-h-screen flex flex-col justify-center py-12">
-          
-          <CountdownTimer />
 
-          {/* Interactive Floating Pinned Up Notice Board */}
+          {/* Interactive Floating  LET'S TRY Notice Board */}
           <section className="text-center my-auto">
             <div className="inline-block mb-4">
               <span className="font-mono text-xs font-bold tracking-[0.3em] text-[#facc15] uppercase">
-                PINNED UP
+                 LET'S TRY
               </span>
               <h3 className="font-serif text-3xl sm:text-4xl font-black text-[#fef6e4] tracking-tight uppercase leading-none mt-1">
-                FrameInGoa
+                 #FRAMEINGOA
               </h3>
             </div>
 
@@ -255,10 +257,10 @@ export default function App() {
 
                 <div className="text-center pt-2 space-y-2">
                   <h4 className="font-mono text-sm sm:text-base font-bold leading-snug text-[#0f172a]">
-                    Task #1 HH Goa Frame / ID Card Generator
+                    Frame / ID Card Generator
                   </h4>
                   <p className="font-mono text-[11px] text-[#475569] leading-relaxed">
-                    Generate circular PFP frame overlay with Goa sunrise graphics for X & LinkedIn.
+                    Generate PFP frame overlay with Goa sunrise graphics for X  
                   </p>
 
                   <div className="pt-1">
@@ -278,7 +280,7 @@ export default function App() {
                   </div>
 
                   <div className="font-mono text-[10px] text-[#94a3b8] pt-0.5 uppercase">
-                    AUG 6, 2026 • HH GOA
+                     
                   </div>
                 </div>
               </div>
@@ -306,10 +308,10 @@ export default function App() {
 
                 <div className="text-center pt-2 space-y-2">
                   <h4 className="font-mono text-sm sm:text-base font-bold leading-snug text-[#0f172a]">
-                    HHGoa'26 : Official Builder Pass ID
+                     Floating Card
                   </h4>
                   <p className="font-mono text-[11px] text-[#475569] leading-relaxed">
-                    Full 800x1100 portrait ID card badge with custom tracks, handle, and QR code.
+                    Generate the ID Card First, Then Try this For Better Experience.
                   </p>
 
                   <div className="pt-1">
@@ -323,13 +325,13 @@ export default function App() {
                           : 'bg-[#facc15] text-[#08140e] hover:bg-[#ff2d75] hover:text-white'
                         }`}
                     >
-                      <span>{isStudioOpen && mode === 'card' ? 'BUILDER ID ACTIVE' : 'OPEN BUILDER ID STUDIO'}</span>
+                      <span>{isStudioOpen && mode === 'card' ? 'BUILDER ID ACTIVE' : 'Get Floating Card'}</span>
                       <Sparkles className="w-3 h-3" />
                     </button>
                   </div>
 
                   <div className="font-mono text-[10px] text-[#94a3b8] pt-0.5 uppercase">
-                    AUG 3, 2026 • HH GOA
+                     
                   </div>
                 </div>
               </div>
@@ -346,7 +348,7 @@ export default function App() {
                   className="flex items-center gap-2 font-mono text-xs font-bold text-[#facc15] hover:text-white bg-[#063b20] px-4 py-2.5 rounded-xl transition cursor-pointer shadow-md"
                 >
                   <ArrowLeft className="w-4 h-4" />
-                  ← BACK TO FRAMEINGOA
+                  ← BACK TO  #FRAMEINGOA
                 </button>
 
                 <div className="flex items-center justify-center font-mono text-sm font-bold text-[#facc15] bg-[#063b20] p-2 rounded-xl flex-1 mx-4 shadow-inner text-center">
@@ -403,12 +405,22 @@ export default function App() {
                         <img
                           src={renderedDataUrl}
                           alt="Generated HH Goa Graphic"
-                          className="w-full h-auto max-h-[500px] object-contain rounded-lg shadow-lg"
+                          className={`w-full h-auto max-h-[500px] object-contain rounded-lg shadow-lg transition-opacity duration-300 ${isGenerating ? 'opacity-40' : 'opacity-100'}`}
                         />
                       ) : (
-                        <div className="p-8 text-[#94a3b8]">
-                          <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-[#f3c048] border-t-transparent mb-2" />
-                          <p className="text-sm">Generating your frame...</p>
+                        <div className="p-8 text-[#94a3b8]" />
+                      )}
+
+                      {isGenerating && (
+                        <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-[#063b20]/55 backdrop-blur-[2px] text-[#fef6e4]">
+                          <div className="relative flex items-center justify-center">
+                            <div className="h-20 w-20 rounded-full border-4 border-[#f3c048]/25 border-t-[#f3c048] border-r-[#ff2d75] animate-spin" />
+                            <RefreshCw className="absolute h-7 w-7 text-[#f3c048] animate-pulse" />
+                          </div>
+                          <div className="text-center">
+                            <p className="font-playfair text-lg font-bold">Generating your PFP</p>
+                            <p className="mt-1 text-xs font-mono text-[#cbd5e1]">Removing background and rendering...</p>
+                          </div>
                         </div>
                       )}
                     </div>
@@ -428,30 +440,18 @@ export default function App() {
                         disabled={!renderedDataUrl}
                         className="w-full sm:flex-1 bg-[#ff2d75] hover:bg-[#d9165b] text-white font-bold py-3.5 px-5 rounded-xl transition flex items-center justify-center gap-2 shadow-lg disabled:opacity-50 cursor-pointer text-sm"
                       >
-                        Proceed to Builder ID 🚀
+                        Get Your ID CARD
                       </button>
                     </div>
 
-                    {/* Generated Shareable Link Callout */}
-                    {shareUrl && (
-                      <div className="mt-4 bg-[#08140e] border border-[#1b3d2c] p-3 rounded-xl flex items-center justify-between gap-2 text-left">
-                        <div className="overflow-hidden">
-                          <span className="block text-[10px] font-mono font-bold text-[#f3c048]">
-                            PUBLIC SHARE PREVIEW LINK:
-                          </span>
-                          <span className="text-xs text-[#cbd5e1] font-mono truncate block">
-                            {shareUrl}
-                          </span>
-                        </div>
-
-                        <button
-                          onClick={handleCopyLink}
-                          className="bg-[#143827] hover:bg-[#1e4d36] text-[#fef6e4] p-2 rounded-lg text-xs font-mono flex items-center gap-1 transition cursor-pointer"
-                        >
-                          {copied ? <Check className="w-4 h-4 text-green-400" /> : <Copy className="w-4 h-4" />}
-                        </button>
-                      </div>
-                    )}
+                    <button
+                      onClick={handleShareToX}
+                      disabled={!renderedDataUrl || isSharing}
+                      className="mt-3 w-full bg-[#050505] hover:bg-[#1f1f1f] text-white font-bold py-3.5 px-5 rounded-xl transition flex items-center justify-center gap-2 shadow-lg disabled:opacity-50 cursor-pointer text-sm"
+                    >
+                      <XLogo className="w-4 h-4" />
+                      {isSharing ? 'Uploading...' : 'Share to X'}
+                    </button>
                   </div>
                 </div>
               </div>
@@ -460,7 +460,10 @@ export default function App() {
 
           {/* Full Screen Interactive 3D Card Modal Reveal */}
           {isStudioOpen && mode === 'card' && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-0 backdrop-blur-2xl bg-[#063b20]/80 animate-fadeIn overflow-hidden">
+            <div
+              className="fixed inset-0 z-50 flex items-center justify-center p-0 bg-cover bg-center animate-fadeIn overflow-hidden"
+              style={{ backgroundImage: "url('/footer%20trees.png')" }}
+            >
               
               {/* Hamburger Menu Toggle Button */}
               <div className="absolute top-6 right-6 z-30">
@@ -492,7 +495,7 @@ export default function App() {
                     disabled={!renderedDataUrl || isSharing}
                     className="w-full bg-[#1d9bf0] hover:bg-[#1a8cd8] text-white font-bold py-3 md:py-3.5 px-4 rounded-xl transition flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(29,155,240,0.3)] disabled:opacity-50 cursor-pointer text-sm"
                   >
-                    <Twitter className="w-4 h-4 fill-current" />
+                    <XLogo className="w-4 h-4" />
                     {isSharing ? 'Uploading...' : 'Share to X'}
                   </button>
                   
@@ -513,13 +516,32 @@ export default function App() {
 
               {/* Massive 3D Physics View (True 100% Full Screen) */}
               <div className="absolute inset-0 w-full h-full drop-shadow-[0_0_80px_rgba(255,45,117,0.3)] z-0">
-                <PhysicsCardPreview textureUrl={renderedDataUrl} />
+                <PhysicsCardPreview textureUrl={cardDataUrl} />
               </div>
+
+              {/* Loading overlay while the ID card graphic is rendering */}
+              {(isGenerating || !renderedDataUrl) && (
+                <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-[#063b20]/70 animate-fadeIn">
+                  <div className="relative h-20 w-20 [perspective:500px]">
+                    <div className="absolute inset-2 rounded-xl border-2 border-[#f3c048] bg-[#08140e]/80 shadow-[0_0_25px_rgba(243,192,72,0.35)] animate-[spin_2.5s_linear_infinite]" />
+                    <div className="absolute inset-2 rounded-xl border-2 border-[#ff2d75] bg-[#08140e]/80 shadow-[0_0_25px_rgba(255,45,117,0.3)] animate-[spin_2.5s_linear_infinite_reverse]" />
+                    <div className="absolute inset-0 flex items-center justify-center text-[#f3c048]">
+                      <RefreshCw className="h-7 w-7 animate-spin" />
+                    </div>
+                  </div>
+                  <p className="mt-5 font-playfair text-lg font-bold text-[#fef6e4] animate-pulse">
+                    Generating your 3D ID card
+                  </p>
+                  <p className="mt-1 font-mono text-xs text-[#cbd5e1]">
+                    Building your badge...
+                  </p>
+                </div>
+              )}
             </div>
           )}
-        </main>
 
-        <GoaFeatures />
+          <CountdownTimer />
+        </main>
       </div>
     </div>
   );

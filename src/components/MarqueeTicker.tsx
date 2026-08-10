@@ -3,8 +3,8 @@ import { Sparkles, Palmtree, Zap, Coffee } from 'lucide-react';
 
 export function MarqueeTicker() {
   const items = [
-    { text: '7 DAYS OF HACKING', icon: Zap },
-    { text: 'BEACHFRONT VILLA', icon: Palmtree },
+    { text: '4 DAYS OF HACKING', icon: Zap },
+    { text: ' ', icon: Palmtree },
     { text: 'UNLIMITED FILTER COFFEE', icon: Coffee },
     { text: 'AUTONOMOUS AGENTS', icon: Sparkles },
     { text: 'PRIZE POOL $50K+', icon: Zap },

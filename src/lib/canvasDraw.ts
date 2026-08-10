@@ -1,4 +1,5 @@
 import { CropArea, BadgeDetails, Mode } from '../types';
+import { removeBackground } from '../services/removeBackground';
 
 /**
  * Brand Color Palette
@@ -29,13 +30,19 @@ export async function drawCanvas(
   const ctx = canvas.getContext('2d');
   if (!ctx) throw new Error('Could not get 2D canvas context');
 
-  // Load user cropped photo if available
+  // Load the user's image, removing its background for the fixed PFP composition.
   let imgElement: HTMLImageElement | null = null;
   if (imageSrc) {
     try {
-      imgElement = await loadImage(imageSrc);
+      const source = await removeBackground(imageSrc);
+      imgElement = await loadImage(source);
     } catch (e) {
       console.warn('Could not load user image', e);
+      try {
+        imgElement = await loadImage(imageSrc);
+      } catch (fallbackError) {
+        console.warn('Could not load fallback user image', fallbackError);
+      }
     }
   }
 
@@ -48,15 +55,14 @@ export async function drawCanvas(
   }
 
   if (mode === 'pfp') {
-    // 800 x 800 Square Profile Picture Frame
-    canvas.width = 800;
-    canvas.height = 800;
-    drawPfpFrame(ctx, imgElement, cropArea, studioLogoImg);
+    canvas.width = 2048;
+    canvas.height = 2048;
+    await drawPfpFrame(ctx, imgElement, cropArea);
   } else {
     // 800 x 1100 Portrait Builder Badge ID Card
     canvas.width = 800;
     canvas.height = 1100;
-    drawBuilderBadge(ctx, imgElement, cropArea, badgeDetails, studioLogoImg);
+    await drawBuilderBadge(ctx, imgElement, cropArea, badgeDetails, studioLogoImg);
   }
 
   return canvas;
@@ -65,171 +71,155 @@ export async function drawCanvas(
 /**
  * Draws the PFP Frame (800x800)
  */
-function drawPfpFrame(
+async function drawPfpFrame(
   ctx: CanvasRenderingContext2D,
   img: HTMLImageElement | null,
-  cropArea: CropArea | null,
-  studioLogoImg: HTMLImageElement | null = null
+  cropArea: CropArea | null
 ) {
-  const size = 800;
+  const size = 2048;
   const centerX = size / 2;
-  const centerY = size / 2;
+  const sunCenterY = 1475;
+  const sunRadius = 590;
+  const [ring, texture] = await Promise.all([
+    loadImage('/assets/hhgoa/brush-ring.svg'),
+    loadImage('/assets/hhgoa/texture.svg'),
+  ]);
 
-  // 1. Fill background with tropical radial gradient
-  const bgGrad = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, size);
-  bgGrad.addColorStop(0, '#144c2e'); // Lighter tropical green center
-  bgGrad.addColorStop(1, BRAND.bgDark);
-  ctx.fillStyle = bgGrad;
+  ctx.fillStyle = '#0D5B3A';
   ctx.fillRect(0, 0, size, size);
+  ctx.globalAlpha = 0.24;
+  ctx.fillStyle = ctx.createPattern(texture, 'repeat') ?? '#0D5B3A';
+  ctx.fillRect(0, 0, size, size);
+  ctx.globalAlpha = 1;
 
-  // Decorative subtle background grid
-  drawBackgroundGrid(ctx, size, size);
-
-  // Outer decorative ring radii
-  const photoRadius = 280;
-  const outerRingRadius = photoRadius + 45;
-
-  // 2. Draw user photo inside circular clip
-  ctx.save();
+  ctx.fillStyle = '#FFD21C';
   ctx.beginPath();
-  ctx.arc(centerX, centerY, photoRadius, 0, Math.PI * 2);
-  ctx.closePath();
-  ctx.clip();
-
-  if (img && cropArea) {
-    ctx.drawImage(
-      img,
-      cropArea.x,
-      cropArea.y,
-      cropArea.width,
-      cropArea.height,
-      centerX - photoRadius,
-      centerY - photoRadius,
-      photoRadius * 2,
-      photoRadius * 2
-    );
-  } else if (img) {
-    // Default cover fit
-    const minDim = Math.min(img.width, img.height);
-    const sx = (img.width - minDim) / 2;
-    const sy = (img.height - minDim) / 2;
-    ctx.drawImage(
-      img,
-      sx,
-      sy,
-      minDim,
-      minDim,
-      centerX - photoRadius,
-      centerY - photoRadius,
-      photoRadius * 2,
-      photoRadius * 2
-    );
-  } else {
-    // Placeholder avatar pattern
-    ctx.fillStyle = '#1e3a2b';
-    ctx.fillRect(centerX - photoRadius, centerY - photoRadius, photoRadius * 2, photoRadius * 2);
-    ctx.fillStyle = BRAND.accentGold;
-    ctx.font = 'bold 120px "Playfair Display", Georgia, serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText('HH', centerX, centerY);
-  }
-  ctx.restore();
-
-  // Photo inner gold stroke border
-  ctx.save();
-  ctx.beginPath();
-  ctx.arc(centerX, centerY, photoRadius, 0, Math.PI * 2);
-  ctx.lineWidth = 10;
-  ctx.strokeStyle = BRAND.accentGold;
-  ctx.shadowColor = BRAND.accentGold;
-  ctx.shadowBlur = 15;
-  ctx.stroke();
-  ctx.restore();
-
-  // 3. Draw Checkerboard Gold Ring around photo
-  drawCheckerboardRing(ctx, centerX, centerY, photoRadius + 12, photoRadius + 36, 48);
-
-  // Outer Gold Border Stroke
-  ctx.beginPath();
-  ctx.arc(centerX, centerY, outerRingRadius, 0, Math.PI * 2);
-  ctx.lineWidth = 4;
-  ctx.strokeStyle = BRAND.accentGold;
-  ctx.stroke();
-
-  // 4. Arced Text on Top Arc
-  drawArcText(
-    ctx,
-    'HACKER HOUSE GOA • OCT 2026',
-    centerX,
-    centerY,
-    photoRadius + 24,
-    -Math.PI / 2, // top center
-    true, // curve upward
-    'bold 28px "IBM Plex Mono", monospace',
-    BRAND.cream
-  );
-
-  // Arced Text "• SHIPPED IN GOA • SHIPPED IN GOA •" on Bottom Arc
-  drawArcText(
-    ctx,
-    '• SHIPPED IN GOA • SHIPPED IN GOA •',
-    centerX,
-    centerY,
-    photoRadius + 24,
-    Math.PI / 2, // bottom center
-    false, // curve downward
-    'bold 22px "IBM Plex Mono", monospace',
-    BRAND.accentGold
-  );
-
-  // 5. Corner Decorative Ticket Stamps / Motifs
-  drawCornerAccents(ctx, size, size);
-
-  // 6. Bottom Banner Badge "HH GOA 2026"
-  const bannerWidth = 420;
-  const bannerHeight = 64;
-  const bannerX = centerX - bannerWidth / 2;
-  const bannerY = size - 110;
-
-  // Banner background with pink/orange gradient
-  ctx.save();
-  const bannerGrad = ctx.createLinearGradient(bannerX, bannerY, bannerX + bannerWidth, bannerY);
-  bannerGrad.addColorStop(0, BRAND.accentPink);
-  bannerGrad.addColorStop(1, '#ff6b2b'); // sunset orange
-  ctx.fillStyle = bannerGrad;
-  ctx.shadowColor = 'rgba(0, 0, 0, 0.6)';
-  ctx.shadowBlur = 20;
-  ctx.shadowOffsetY = 8;
-  ctx.beginPath();
-  ctx.roundRect(bannerX, bannerY, bannerWidth, bannerHeight, 32);
+  ctx.arc(centerX, sunCenterY, sunRadius, 0, Math.PI * 2);
   ctx.fill();
 
-  // Banner inner gold border
-  ctx.strokeStyle = BRAND.accentGold;
-  ctx.lineWidth = 3;
+  if (img) {
+    const bounds = findOpaqueBounds(img);
+    if (bounds) drawPfpSubject(ctx, img, bounds, cropArea, centerX, sunCenterY, sunRadius);
+  }
+
+  ctx.drawImage(ring, centerX - 720, sunCenterY - 720, 1440, 1440);
+  drawPfpBranding(ctx, size);
+}
+
+interface ImageBounds {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+function findOpaqueBounds(img: HTMLImageElement): ImageBounds | null {
+  const canvas = document.createElement('canvas');
+  canvas.width = img.naturalWidth;
+  canvas.height = img.naturalHeight;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return null;
+  ctx.drawImage(img, 0, 0);
+  const pixels = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+  let minX = canvas.width;
+  let minY = canvas.height;
+  let maxX = -1;
+  let maxY = -1;
+
+  for (let y = 0; y < canvas.height; y += 2) {
+    for (let x = 0; x < canvas.width; x += 2) {
+      if (pixels[(y * canvas.width + x) * 4 + 3] > 18) {
+        minX = Math.min(minX, x);
+        minY = Math.min(minY, y);
+        maxX = Math.max(maxX, x);
+        maxY = Math.max(maxY, y);
+      }
+    }
+  }
+
+  return maxX < 0 ? null : { x: minX, y: minY, width: maxX - minX + 1, height: maxY - minY + 1 };
+}
+
+function drawPfpSubject(
+  ctx: CanvasRenderingContext2D,
+  img: HTMLImageElement,
+  bounds: ImageBounds,
+  cropArea: CropArea | null,
+  centerX: number,
+  sunCenterY: number,
+  sunRadius: number
+) {
+  const maxWidth = sunRadius * 1.55;
+  const maxHeight = 1400;
+  const zoom = cropArea ? Math.min(img.naturalWidth / cropArea.width, img.naturalHeight / cropArea.height) : 1;
+  const scale = Math.min(maxWidth / bounds.width, maxHeight / bounds.height) * Math.min(zoom, 2.25);
+  const width = bounds.width * scale;
+  const height = bounds.height * scale;
+  const cropCenterX = cropArea ? cropArea.x + cropArea.width / 2 : bounds.x + bounds.width / 2;
+  const cropCenterY = cropArea ? cropArea.y + cropArea.height / 2 : bounds.y + bounds.height / 2;
+  const subjectXRatio = cropArea ? (bounds.x + bounds.width / 2 - cropCenterX) / cropArea.width : 0;
+  const subjectYRatio = cropArea ? (bounds.y + bounds.height / 2 - cropCenterY) / cropArea.height : 0;
+  const x = centerX - width / 2 + subjectXRatio * sunRadius * 2;
+  const y = Math.max(870, Math.min(2015 - height, sunCenterY - height / 2 + subjectYRatio * sunRadius * 2));
+  ctx.drawImage(img, bounds.x, bounds.y, bounds.width, bounds.height, x, y, width, height);
+}
+
+function drawPfpBranding(ctx: CanvasRenderingContext2D, size: number) {
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'top';
+  ctx.fillStyle = '#FFD21C';
+  ctx.font = '900 124px Georgia, serif';
+  ctx.fillText('HH', 82, 78);
+  ctx.fillText('GOA', 82, 198);
+  ctx.fillText('2026', 82, 318);
+
+  ctx.fillStyle = '#FF3F83';
+  ctx.strokeStyle = '#FF3F83';
+  ctx.lineWidth = 18;
+  ctx.beginPath();
+  ctx.moveTo(290, 270);
+  ctx.lineTo(325, 142);
   ctx.stroke();
+  for (let i = 0; i < 7; i++) {
+    const angle = -Math.PI + (i / 6) * Math.PI;
+    ctx.beginPath();
+    ctx.moveTo(325, 150);
+    ctx.quadraticCurveTo(325 + Math.cos(angle) * 80, 80 + Math.sin(angle) * 65, 325 + Math.cos(angle) * 145, 75 + Math.sin(angle) * 95);
+    ctx.stroke();
+  }
 
-  // Banner text
-  ctx.fillStyle = '#ffffff';
-  ctx.font = 'bold 30px "Playfair Display", Georgia, serif';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.shadowColor = 'transparent';
-  ctx.fillText('HH GOA 2026', centerX, bannerY + bannerHeight / 2 - 2);
+  ctx.font = '900 190px Georgia, serif';
+  ctx.fillStyle = '#FFD21C';
+  ctx.fillText('HACKER HOUSE', 78, 490);
+  ctx.font = '900 134px sans-serif';
+  ctx.fillStyle = '#FF3F83';
+  ctx.strokeStyle = '#FFD21C';
+  ctx.lineWidth = 12;
+  ctx.strokeText('गोवा', size / 2 - 150, 690);
+  ctx.fillText('गोवा', size / 2 - 150, 690);
 
-  // Subtitle "गोवा" in hot pink / white contrast
-  ctx.font = 'bold 20px "Plus Jakarta Sans", sans-serif';
-  ctx.fillStyle = BRAND.accentGold;
-  ctx.fillText('BUILDER EDITION', centerX, bannerY + bannerHeight + 24);
+  ctx.font = '900 48px Arial, sans-serif';
+  ctx.fillStyle = '#FFD21C';
+  ctx.fillText('—  GOA, INDIA   •   28 – 31 OCT 2026   •   BUILT IN GOA FOR BUILDERS  —', 82, 838);
 
+  ctx.save();
+  ctx.translate(1600, 80);
+  ctx.rotate(-0.12);
+  ctx.strokeStyle = '#FFD21C';
+  ctx.lineWidth = 10;
+  ctx.strokeRect(0, 0, 365, 205);
+  ctx.font = '900 48px Arial, sans-serif';
+  ctx.fillStyle = '#FFD21C';
+  ctx.fillText('BUILT IN GOA', 25, 38);
+  ctx.fillStyle = '#FF3F83';
+  ctx.fillText('FOR BUILDERS', 25, 105);
   ctx.restore();
 }
 
 /**
  * Draws the Builder Badge ID Card (800x1100)
  */
-function drawBuilderBadge(
+async function drawBuilderBadge(
   ctx: CanvasRenderingContext2D,
   img: HTMLImageElement | null,
   cropArea: CropArea | null,
@@ -238,201 +228,136 @@ function drawBuilderBadge(
 ) {
   const width = 800;
   const height = 1100;
+  const margin = 18;
+  const ring = await loadImage('/assets/hhgoa/brush-ring.svg');
 
-  // 1. Dark Tropical Canvas Background
-  ctx.fillStyle = BRAND.bgDark;
+  ctx.fillStyle = '#0D5B3A';
   ctx.fillRect(0, 0, width, height);
-
   drawBackgroundGrid(ctx, width, height);
 
-  // 2. Outer Card Container (with rounded corners and gold border)
-  const margin = 36;
-  const cardWidth = width - margin * 2;
-  const cardHeight = height - margin * 2;
-
-  ctx.save();
-  // Card base
-  ctx.fillStyle = BRAND.bgCard;
-  ctx.shadowColor = 'rgba(0, 0, 0, 0.7)';
-  ctx.shadowBlur = 30;
-  ctx.shadowOffsetY = 10;
-  ctx.beginPath();
-  ctx.roundRect(margin, margin, cardWidth, cardHeight, 28);
-  ctx.fill();
-
-  // Card Outer Double Border
-  ctx.strokeStyle = BRAND.accentGold;
-  ctx.lineWidth = 4;
+  ctx.strokeStyle = '#276b48';
+  ctx.lineWidth = 8;
+  ctx.roundRect(margin, margin, width - margin * 2, height - margin * 2, 36);
   ctx.stroke();
 
-  ctx.strokeStyle = 'rgba(243, 192, 72, 0.3)';
-  ctx.lineWidth = 2;
-  ctx.beginPath();
-  ctx.roundRect(margin + 8, margin + 8, cardWidth - 16, cardHeight - 16, 20);
-  ctx.stroke();
-  ctx.restore();
-
-  // 3. Card Header (Sunrise over ocean + HH Goa brand text & Studio Logo)
-  drawHeaderArtwork(ctx, margin, margin, cardWidth, 180, studioLogoImg);
-
-  // 4. Lanyard Slot Notch at Top Center
-  ctx.save();
-  ctx.fillStyle = BRAND.darkGreen;
-  ctx.beginPath();
-  ctx.roundRect(width / 2 - 45, margin + 12, 90, 16, 8);
-  ctx.fill();
-  ctx.strokeStyle = BRAND.accentGold;
-  ctx.lineWidth = 2;
-  ctx.stroke();
-  ctx.restore();
-
-  // 5. User Photo Frame (Portrait 280x320 with rounded corners)
-  const photoX = width / 2 - 140;
-  const photoY = 240;
-  const photoW = 280;
-  const photoH = 320;
-
-  ctx.save();
-  // Photo frame backing shadow
-  ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
-  ctx.shadowBlur = 12;
-  ctx.shadowOffsetY = 4;
-  ctx.fillStyle = '#122e20';
-  ctx.beginPath();
-  ctx.roundRect(photoX, photoY, photoW, photoH, 20);
-  ctx.fill();
-  ctx.restore();
-
-  // Clip user photo
-  ctx.save();
-  ctx.beginPath();
-  ctx.roundRect(photoX, photoY, photoW, photoH, 20);
-  ctx.clip();
-
-  if (img && cropArea) {
-    ctx.drawImage(
-      img,
-      cropArea.x,
-      cropArea.y,
-      cropArea.width,
-      cropArea.height,
-      photoX,
-      photoY,
-      photoW,
-      photoH
-    );
-  } else if (img) {
-    ctx.drawImage(img, photoX, photoY, photoW, photoH);
-  } else {
-    // Placeholder avatar
-    ctx.fillStyle = '#1c3d2f';
-    ctx.fillRect(photoX, photoY, photoW, photoH);
-    ctx.fillStyle = BRAND.accentGold;
-    ctx.font = 'bold 80px "Playfair Display", Georgia, serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText('GOA', photoX + photoW / 2, photoY + photoH / 2);
-  }
-  ctx.restore();
-
-  // Photo frame gold border & corner flourishes
-  ctx.beginPath();
-  ctx.roundRect(photoX, photoY, photoW, photoH, 20);
-  ctx.lineWidth = 4;
-  ctx.strokeStyle = BRAND.accentGold;
-  ctx.stroke();
-
-  // Checkerboard accent strips on photo sides
-  drawCheckerboardStrip(ctx, photoX - 16, photoY, 12, photoH, 6);
-  drawCheckerboardStrip(ctx, photoX + photoW + 4, photoY, 12, photoH, 6);
-
-  // 6. Name and Handle Section
-  let currentY = photoY + photoH + 36;
-
-  ctx.textAlign = 'center';
+  ctx.fillStyle = '#FFD21C';
+  ctx.textAlign = 'left';
   ctx.textBaseline = 'top';
-
-  // Name
-  ctx.fillStyle = BRAND.cream;
-  const displayName = (badge.name || 'ANONYMOUS BUILDER').toUpperCase();
-  ctx.font = 'bold 36px "Playfair Display", Georgia, serif';
-  ctx.fillText(truncateText(ctx, displayName, cardWidth - 80), width / 2, currentY);
-
-  currentY += 46;
-
-  // Handle / Social
-  if (badge.handle) {
-    const handleText = badge.handle.startsWith('@') ? badge.handle : `@${badge.handle}`;
-    ctx.fillStyle = BRAND.accentGold;
-    ctx.font = 'bold 22px "IBM Plex Mono", monospace';
-    ctx.fillText(handleText, width / 2, currentY);
-    currentY += 36;
-  }
-
-  // 7. Whimsical Builder Title Banner
-  const titleBoxW = cardWidth - 100;
-  const titleBoxH = 50;
-  const titleBoxX = width / 2 - titleBoxW / 2;
+  ctx.font = '900 43px Georgia, serif';
+  ctx.fillText('HH', 48, 42);
+  ctx.fillText('GOA', 48, 84);
+  ctx.fillText('2026', 48, 126);
+  drawPalmAccent(ctx, 142, 122, 52);
 
   ctx.save();
-  ctx.fillStyle = 'rgba(255, 45, 117, 0.15)';
-  ctx.beginPath();
-  ctx.roundRect(titleBoxX, currentY, titleBoxW, titleBoxH, 12);
-  ctx.fill();
-
-  ctx.strokeStyle = BRAND.accentPink;
-  ctx.lineWidth = 2;
-  ctx.stroke();
-
-  ctx.fillStyle = BRAND.accentPink;
-  ctx.font = 'bold 20px "IBM Plex Mono", monospace';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  const displayTitle = badge.title || 'Full-Stack Wizard of Goa';
-  ctx.fillText(truncateText(ctx, displayTitle, titleBoxW - 24), width / 2, currentY + titleBoxH / 2);
+  ctx.translate(590, 38);
+  ctx.rotate(-0.12);
+  ctx.strokeStyle = '#FFD21C';
+  ctx.lineWidth = 4;
+  ctx.strokeRect(0, 0, 180, 78);
+  ctx.font = '900 19px Arial, sans-serif';
+  ctx.fillStyle = '#FFD21C';
+  ctx.fillText('BUILT IN GOA', 12, 16);
+  ctx.fillStyle = '#FF3F83';
+  ctx.fillText('FOR BUILDERS', 12, 43);
   ctx.restore();
 
-  currentY += titleBoxH + 30;
+  ctx.fillStyle = '#FFD21C';
+  ctx.font = '900 72px Georgia, serif';
+  ctx.fillText('HACKER', 42, 208);
+  ctx.fillText('HOUSE', 410, 208);
+  ctx.font = '900 39px sans-serif';
+  ctx.fillStyle = '#FF3F83';
+  ctx.strokeStyle = '#FFD21C';
+  ctx.lineWidth = 5;
+  ctx.strokeText('गोवा', 363, 245);
+  ctx.fillText('गोवा', 363, 245);
 
-  // 8. Grid Information Fields (Track, Role, Company)
-  const gridY = currentY;
-  const colWidth = (cardWidth - 80) / 2;
-  const leftX = margin + 40;
-  const rightX = leftX + colWidth;
+  ctx.font = '900 18px Arial, sans-serif';
+  ctx.fillStyle = '#FFD21C';
+  ctx.fillText('—  GOA, INDIA   •   28 – 31 OCT 2026   •   BUILT IN GOA FOR BUILDERS  —', 42, 310);
 
-  // Column 1: TRACK / STACK
-  drawDetailItem(
-    ctx,
-    'TRACK / STACK',
-    badge.track || 'AI & Full-Stack',
-    leftX,
-    gridY,
-    colWidth
-  );
+  const sunX = width / 2;
+  const sunY = 535;
+  const sunRadius = 210;
+  ctx.fillStyle = '#FFD21C';
+  ctx.beginPath();
+  ctx.arc(sunX, sunY, sunRadius, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.drawImage(ring, sunX - 250, sunY - 250, 500, 500);
 
-  // Column 2: ROLE
-  drawDetailItem(
-    ctx,
-    'ROLE',
-    badge.role || 'Hacker / Founder',
-    rightX,
-    gridY,
-    colWidth
-  );
+  if (img) {
+    const bounds = findOpaqueBounds(img);
+    if (bounds) {
+      const scale = Math.min(390 / bounds.width, 455 / bounds.height);
+      const subjectW = bounds.width * scale;
+      const subjectH = bounds.height * scale;
+      const subjectX = sunX - subjectW / 2;
+      const subjectY = sunY - subjectH * 0.32;
+      ctx.drawImage(img, bounds.x, bounds.y, bounds.width, bounds.height, subjectX, subjectY, subjectW, subjectH);
+    }
+  }
 
-  // Row 2: AFFILIATION / PROJECT
-  drawDetailItem(
-    ctx,
-    'PROJECT / AFFILIATION',
-    badge.company || 'Building in Public',
-    leftX,
-    gridY + 68,
-    cardWidth - 80
-  );
+  ctx.textAlign = 'center';
+  ctx.fillStyle = '#F7F1DF';
+  ctx.font = '900 35px Arial, sans-serif';
+  ctx.fillText((badge.name || 'ANONYMOUS BUILDER').toUpperCase(), width / 2, 760);
+  ctx.fillStyle = '#FF3F83';
+  ctx.font = '900 24px Arial, sans-serif';
+  ctx.fillText((badge.role || 'BUILDER').toUpperCase(), width / 2, 800);
 
-  // 9. Card Footer Bar with Barcode / Ticket Notch & Stamp
-  const footerY = height - margin - 110;
-  drawBadgeFooter(ctx, margin, footerY, cardWidth, 110);
+  ctx.strokeStyle = '#FFD21C';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(60, 842);
+  ctx.lineTo(740, 842);
+  ctx.stroke();
+
+  const stack = badge.track || 'AI & FULL-STACK';
+  ctx.fillStyle = '#F7F1DF';
+  ctx.font = '700 18px Arial, sans-serif';
+  ctx.fillText(truncateText(ctx, stack.toUpperCase(), 690), width / 2, 866);
+
+  ctx.strokeStyle = '#FFD21C';
+  ctx.lineWidth = 2;
+  ctx.strokeRect(42, 905, 716, 58);
+  ctx.fillStyle = '#FFD21C';
+  ctx.font = '700 18px Arial, sans-serif';
+  ctx.fillText(`“${truncateText(ctx, badge.title || 'I BUILD INTERFACES THAT INSPIRE', 650)}”`, width / 2, 925);
+
+  ctx.textAlign = 'left';
+  ctx.fillStyle = '#FF3F83';
+  ctx.font = 'italic 38px Georgia, serif';
+  ctx.fillText('#FrameInGoa', 145, 1000);
+  ctx.fillStyle = '#FFD21C';
+  ctx.font = '900 33px Georgia, serif';
+  ctx.fillText('HH', 675, 1000);
+  ctx.fillStyle = '#FFD21C';
+  ctx.font = '900 13px Arial, sans-serif';
+  ctx.fillText('GOA 2026', 664, 1040);
+}
+
+function drawPalmAccent(ctx: CanvasRenderingContext2D, x: number, y: number, size: number) {
+  ctx.save();
+  ctx.strokeStyle = '#FF3F83';
+  ctx.lineWidth = 5;
+  ctx.beginPath();
+  ctx.moveTo(x, y + size);
+  ctx.lineTo(x + 7, y + 18);
+  ctx.stroke();
+  for (let index = 0; index < 6; index++) {
+    const angle = -Math.PI + (index / 5) * Math.PI;
+    ctx.beginPath();
+    ctx.moveTo(x + 7, y + 20);
+    ctx.quadraticCurveTo(
+      x + 7 + Math.cos(angle) * size * 0.35,
+      y - Math.sin(angle) * size * 0.25,
+      x + 7 + Math.cos(angle) * size * 0.7,
+      y + Math.sin(angle) * size * 0.2
+    );
+    ctx.stroke();
+  }
+  ctx.restore();
 }
 
 /**

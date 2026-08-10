@@ -789,7 +789,7 @@ export function renderPoster(
   ctx.font = `800 44px "IBM Plex Mono", monospace`;
   ctx.textAlign = "left";
   ctx.textBaseline = "middle";
-  ctx.fillText("#FRAMEINGOA", 56, bannerY + bannerH / 2 + 8);
+  ctx.fillText("# #FRAMEINGOA", 56, bannerY + bannerH / 2 + 8);
   ctx.restore();
 
   // HH logo circle, overlapping the banner on the right
