@@ -149,19 +149,38 @@ function drawPfpSubject(
   sunCenterY: number,
   sunRadius: number
 ) {
-  const maxWidth = sunRadius * 1.55;
-  const maxHeight = 1400;
-  const zoom = cropArea ? Math.min(img.naturalWidth / cropArea.width, img.naturalHeight / cropArea.height) : 1;
-  const scale = Math.min(maxWidth / bounds.width, maxHeight / bounds.height) * Math.min(zoom, 2.25);
-  const width = bounds.width * scale;
-  const height = bounds.height * scale;
-  const cropCenterX = cropArea ? cropArea.x + cropArea.width / 2 : bounds.x + bounds.width / 2;
-  const cropCenterY = cropArea ? cropArea.y + cropArea.height / 2 : bounds.y + bounds.height / 2;
-  const subjectXRatio = cropArea ? (bounds.x + bounds.width / 2 - cropCenterX) / cropArea.width : 0;
-  const subjectYRatio = cropArea ? (bounds.y + bounds.height / 2 - cropCenterY) / cropArea.height : 0;
-  const x = centerX - width / 2 + subjectXRatio * sunRadius * 2;
-  const y = Math.max(870, Math.min(2015 - height, sunCenterY - height / 2 + subjectYRatio * sunRadius * 2));
-  ctx.drawImage(img, bounds.x, bounds.y, bounds.width, bounds.height, x, y, width, height);
+  const source = cropArea ?? bounds;
+  drawRoundCroppedSubject(ctx, img, source, centerX, sunCenterY, Math.min(sunRadius, 620));
+}
+
+function drawRoundCroppedSubject(
+  ctx: CanvasRenderingContext2D,
+  img: HTMLImageElement,
+  source: ImageBounds,
+  centerX: number,
+  centerY: number,
+  radius: number
+) {
+  const cropSize = Math.min(source.width, source.height);
+  const sourceX = source.x + (source.width - cropSize) / 2;
+  const sourceY = source.y + (source.height - cropSize) / 2;
+
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+  ctx.clip();
+  ctx.drawImage(
+    img,
+    sourceX,
+    sourceY,
+    cropSize,
+    cropSize,
+    centerX - radius,
+    centerY - radius,
+    radius * 2,
+    radius * 2
+  );
+  ctx.restore();
 }
 
 function drawPfpBranding(ctx: CanvasRenderingContext2D, size: number) {
@@ -289,12 +308,7 @@ async function drawBuilderBadge(
   if (img) {
     const bounds = findOpaqueBounds(img);
     if (bounds) {
-      const scale = Math.min(390 / bounds.width, 455 / bounds.height);
-      const subjectW = bounds.width * scale;
-      const subjectH = bounds.height * scale;
-      const subjectX = sunX - subjectW / 2;
-      const subjectY = sunY - subjectH * 0.32;
-      ctx.drawImage(img, bounds.x, bounds.y, bounds.width, bounds.height, subjectX, subjectY, subjectW, subjectH);
+      drawRoundCroppedSubject(ctx, img, cropArea ?? bounds, sunX, sunY, sunRadius);
     }
   }
 
