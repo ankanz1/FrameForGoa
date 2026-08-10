@@ -126,6 +126,10 @@ export default function App() {
     if (!renderedDataUrl) return;
     setIsSharing(true);
 
+    // Open the popup synchronously within the tap gesture. Mobile browsers block
+    // window.open() fired after an await, so we open it first and navigate later.
+    const popup = window.open('', '_blank');
+
     try {
       const res = await fetch('/api/upload', {
         method: 'POST',
@@ -143,10 +147,18 @@ export default function App() {
           }! 🌴🔥\n\nCheck it out & create yours:\n${data.url}\n\n#FrameInGoa #HHGoa2026 @HHGoa2026`
         );
 
-        window.open(`https://twitter.com/intent/tweet?text=${tweetText}`, '_blank');
+        const xIntentUrl = `https://x.com/intent/tweet?text=${tweetText}`;
+        if (popup && !popup.closed) {
+          popup.location.href = xIntentUrl;
+        } else {
+          window.location.href = xIntentUrl;
+        }
+      } else if (popup && !popup.closed) {
+        popup.close();
       }
     } catch (err) {
       console.error('Share upload failed', err);
+      if (popup && !popup.closed) popup.close();
     } finally {
       setIsSharing(false);
     }
