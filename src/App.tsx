@@ -260,7 +260,7 @@ export default function App() {
                     Frame / ID Card Generator
                   </h4>
                   <p className="font-mono text-[11px] text-[#475569] leading-relaxed">
-                    Generate circular PFP frame overlay with Goa sunrise graphics for X  
+                    Generate PFP frame overlay with Goa sunrise graphics for X  
                   </p>
 
                   <div className="pt-1">
@@ -311,7 +311,7 @@ export default function App() {
                      Floating Card
                   </h4>
                   <p className="font-mono text-[11px] text-[#475569] leading-relaxed">
-                    Full 800x1100 portrait ID card badge with custom tracks, handle, and QR code.
+                    Generate the ID Card First, Then Try this For Better Experience.
                   </p>
 
                   <div className="pt-1">
