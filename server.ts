@@ -24,7 +24,7 @@ const app = express();
 const PORT = 3000;
 
 // Body parser
-app.use(express.json({ limit: '15mb' }));
+app.use(express.json({ limit: '60mb' }));
 
 // In-memory store for generated graphics (for X share preview links)
 // Key: graphicId, Value: { dataUrl: string, remoteUrl?: string, createdAt: number }

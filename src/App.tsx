@@ -126,9 +126,28 @@ export default function App() {
     if (!renderedDataUrl) return;
     setIsSharing(true);
 
-    // Open the popup synchronously within the tap gesture. Mobile browsers block
-    // window.open() fired after an await, so we open it first and navigate later.
-    const popup = window.open('', '_blank');
+    const canShare = typeof navigator.share === 'function';
+
+    // Open the popup synchronously within the tap gesture — but only when we'll
+    // need it. Mobile browsers block window.open() fired after an await, so we
+    // open it first and navigate later. On mobile with Web Share available we
+    // skip the popup entirely and use the native share sheet instead.
+    const popup = canShare ? null : window.open('', '_blank');
+
+    // Render a spinner into the popup immediately so it's never a blank page.
+    if (popup) {
+      try {
+        popup.document.write(
+          '<!doctype html><html><body style="margin:0;background:#08140e;display:flex;align-items:center;justify-content:center;height:100vh;flex-direction:column;gap:16px;font-family:system-ui;-webkit-font-smoothing:antialiased">' +
+            '<div style="width:42px;height:42px;border-radius:50%;border:4px solid rgba(243,192,72,.25);border-top-color:#f3c048;animation:spin 1s linear infinite"></div>' +
+            '<p style="color:#fef6e4;font-size:14px;margin:0">Preparing your HH Goa share…</p>' +
+            '<style>@keyframes spin{to{transform:rotate(360deg)}}</style></body></html>'
+        );
+        popup.document.close();
+      } catch {
+        // Popup already navigated or write blocked; ignore.
+      }
+    }
 
     try {
       const res = await fetch('/api/upload', {
@@ -137,28 +156,55 @@ export default function App() {
         body: JSON.stringify({ image: renderedDataUrl }),
       });
 
-      const data = await res.json();
-      if (data.url) {
-        setShareUrl(data.url);
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.url) {
+        throw new Error(data.error || 'Upload failed');
+      }
 
-        // Pre-fill the X post with the generated share URL and campaign hashtags
-        const tweetText = encodeURIComponent(
-          `I just created my official HH Goa 2026 ${mode === 'pfp' ? 'PFP Frame' : 'Builder Badge'
-          }! 🌴🔥\n\nCheck it out & create yours:\n${data.url}\n\n#FrameInGoa #HHGoa2026 @HHGoa2026`
-        );
+      setShareUrl(data.url);
 
-        const xIntentUrl = `https://x.com/intent/tweet?text=${tweetText}`;
-        if (popup && !popup.closed) {
-          popup.location.href = xIntentUrl;
-        } else {
-          window.location.href = xIntentUrl;
+      // Pre-fill the X post with the generated share URL and campaign hashtags
+      const shareText = `I just created my official HH Goa 2026 ${mode === 'pfp' ? 'PFP Frame' : 'Builder Badge'
+        }! 🌴🔥\n\nCheck it out & create yours:\n${data.url}\n\n#FrameInGoa #HHGoa2026 @HHGoa2026`;
+
+      const xIntentUrl = `https://x.com/intent/tweet?text=${encodeURIComponent(shareText)}`;
+
+      // Preferred on mobile: native share sheet (includes X app).
+      if (canShare) {
+        try {
+          await navigator.share({
+            title: 'HH Goa 2026 Builder',
+            text: shareText,
+            url: data.url,
+          });
+          return;
+        } catch (shareErr) {
+          // AbortError = user cancelled; fall through to popup fallback.
+          if (!(shareErr instanceof Error && shareErr.name === 'AbortError')) {
+            console.warn('Web Share API failed, falling back to X intent', shareErr);
+          }
         }
-      } else if (popup && !popup.closed) {
-        popup.close();
+      }
+
+      if (popup && !popup.closed) {
+        try {
+          popup.location.href = xIntentUrl;
+        } catch {
+          window.open(xIntentUrl, '_blank');
+        }
+      } else {
+        window.open(xIntentUrl, '_blank', 'noopener');
       }
     } catch (err) {
       console.error('Share upload failed', err);
-      if (popup && !popup.closed) popup.close();
+      if (popup && !popup.closed) {
+        try {
+          popup.close();
+        } catch {
+          // ignore
+        }
+      }
+      alert('Could not prepare your X post. Please try again.');
     } finally {
       setIsSharing(false);
     }
