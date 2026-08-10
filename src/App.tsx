@@ -126,9 +126,13 @@ export default function App() {
     if (!renderedDataUrl) return;
     setIsSharing(true);
 
-    // Open the popup synchronously within the tap gesture. Mobile browsers block
-    // window.open() fired after an await, so we open it first and navigate later.
-    const popup = window.open('', '_blank');
+    const canShare = typeof navigator.share === 'function';
+
+    // Open the popup synchronously within the tap gesture — but only when we'll
+    // need it. Mobile browsers block window.open() fired after an await, so we
+    // open it first and navigate later. On mobile with Web Share available we
+    // skip the popup entirely and use the native share sheet instead.
+    const popup = canShare ? null : window.open('', '_blank');
 
     // Render a spinner into the popup immediately so it's never a blank page.
     if (popup) {
@@ -160,12 +164,28 @@ export default function App() {
       setShareUrl(data.url);
 
       // Pre-fill the X post with the generated share URL and campaign hashtags
-      const tweetText = encodeURIComponent(
-        `I just created my official HH Goa 2026 ${mode === 'pfp' ? 'PFP Frame' : 'Builder Badge'
-        }! 🌴🔥\n\nCheck it out & create yours:\n${data.url}\n\n#FrameInGoa #HHGoa2026 @HHGoa2026`
-      );
+      const shareText = `I just created my official HH Goa 2026 ${mode === 'pfp' ? 'PFP Frame' : 'Builder Badge'
+        }! 🌴🔥\n\nCheck it out & create yours:\n${data.url}\n\n#FrameInGoa #HHGoa2026 @HHGoa2026`;
 
-      const xIntentUrl = `https://x.com/intent/tweet?text=${tweetText}`;
+      const xIntentUrl = `https://x.com/intent/tweet?text=${encodeURIComponent(shareText)}`;
+
+      // Preferred on mobile: native share sheet (includes X app).
+      if (canShare) {
+        try {
+          await navigator.share({
+            title: 'HH Goa 2026 Builder',
+            text: shareText,
+            url: data.url,
+          });
+          return;
+        } catch (shareErr) {
+          // AbortError = user cancelled; fall through to popup fallback.
+          if (!(shareErr instanceof Error && shareErr.name === 'AbortError')) {
+            console.warn('Web Share API failed, falling back to X intent', shareErr);
+          }
+        }
+      }
+
       if (popup && !popup.closed) {
         try {
           popup.location.href = xIntentUrl;
