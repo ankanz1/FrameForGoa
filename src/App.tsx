@@ -5,7 +5,7 @@ import { Mode, BadgeDetails, CropArea } from './types';
 import { drawCanvas, canvasToBlob } from './lib/canvasDraw';
 import { PhotoCropper } from './components/PhotoCropper';
 import { BadgeForm } from './components/BadgeForm';
-import { PresetAvatars } from './components/PresetAvatars';
+
 import { getRandomBuilderTitle } from './lib/builderTitle';
 import { CountdownTimer } from './components/CountdownTimer';
 import { MarqueeTicker } from './components/MarqueeTicker';
@@ -465,10 +465,6 @@ export default function App() {
                     onImageChange={setImageSrc}
                     onCropChange={setCropArea}
                   />
-
-                  {!imageSrc && (
-                    <PresetAvatars onSelectPreset={(presetUrl) => setImageSrc(presetUrl)} />
-                  )}
 
                   <BadgeForm details={badgeDetails} onChange={setBadgeDetails} />
                 </div>
