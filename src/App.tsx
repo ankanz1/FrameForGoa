@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Download, Share2, Sparkles, RefreshCw, ArrowLeft, X, Menu } from 'lucide-react';
+import { Download, Share2, RefreshCw, ArrowLeft, X, Menu } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { Mode, BadgeDetails, CropArea } from './types';
 import { drawCanvas, canvasToBlob } from './lib/canvasDraw';
@@ -99,6 +99,7 @@ export default function App() {
   const [showCardMenu, setShowCardMenu] = useState(false);
 
   const previewCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  const studioClicksRef = useRef(0);
 
   const openStudio = (targetMode: Mode) => {
     setMode(targetMode);
@@ -249,10 +250,10 @@ export default function App() {
   return (
     <div 
       className="min-h-screen text-[#fef6e4] font-body-text pb-16 relative overflow-x-hidden bg-cover bg-center bg-fixed"
-      style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=2000&q=80")' }}
+      style={{ backgroundImage: 'url("/goa-beach-illustration.svg")' }}
     >
-      {/* Dark green overlay to ensure text readability against the beach background */}
-      <div className="absolute inset-0 bg-[#0b6839]/85 z-0 pointer-events-none"></div>
+      {/* Green gradient overlay so text stays readable while the hand-drawn beach scene shows through */}
+      <div className="absolute inset-0 bg-[linear-gradient(to_bottom,rgba(8,40,24,0.85),rgba(8,40,24,0.45)_45%,rgba(8,40,24,0.18))] z-0 pointer-events-none"></div>
       
       <div className="relative z-10">
         {/* Official HH Goa Hero Banner Section (Full Screen Opening View) */}
@@ -274,6 +275,19 @@ export default function App() {
                 href="https://hhgoa.com"
                 target="_blank"
                 rel="noreferrer"
+                onClick={() => {
+                  studioClicksRef.current += 1;
+                  if (studioClicksRef.current >= 5) {
+                    studioClicksRef.current = 0;
+                    confetti({
+                      particleCount: 120,
+                      spread: 80,
+                      origin: { y: 0.35 },
+                      colors: ['#ff2d75', '#facc15', '#fef6e4'],
+                    });
+                    console.log('made in goa at 2:47pm, obviously');
+                  }
+                }}
                 className="flex items-center gap-2 group hover:opacity-90 transition"
               >
                 <img
@@ -317,12 +331,12 @@ export default function App() {
         <main id="main-section" className="max-w-6xl mx-auto px-4 min-h-screen flex flex-col justify-center py-12">
 
           {/* Interactive Floating  LET'S TRY Notice Board */}
-          <section className="text-center my-auto">
+          <section className="text-center my-auto relative">
             <div className="inline-block mb-4">
               <span className="font-mono text-xs font-bold tracking-[0.3em] text-[#facc15] uppercase">
                  LET'S TRY
               </span>
-              <h3 className="font-serif text-3xl sm:text-4xl font-black text-[#fef6e4] tracking-tight uppercase leading-none mt-1">
+              <h3 className="font-display text-3xl sm:text-4xl font-black text-[#fef6e4] tracking-tight uppercase leading-none mt-1">
                  #FRAMEINGOA
               </h3>
             </div>
@@ -331,7 +345,7 @@ export default function App() {
               {/* Card 1: Circular PFP Frame */}
               <div
                 onClick={() => openStudio('pfp')}
-                className={`group relative bg-[#fffdf0] text-[#1c1917] p-4 sm:p-5 rounded-xl shadow-xl transition-all duration-300 cursor-pointer border-2 ${isStudioOpen && mode === 'pfp'
+                className={`group relative bg-[#fffdf0] text-[#1c1917] p-4 sm:p-5 rounded-xl shadow-xl transition-all duration-300 cursor-pointer border-2 sm:-rotate-1 ${isStudioOpen && mode === 'pfp'
                     ? 'border-[#ff2d75] ring-4 ring-[#ff2d75]/30'
                     : 'border-[#e2e8f0] hover:border-[#facc15]'
                   }`}
@@ -351,10 +365,10 @@ export default function App() {
 
                 <div className="text-center pt-2 space-y-2">
                   <h4 className="font-mono text-sm sm:text-base font-bold leading-snug text-[#0f172a]">
-                    Frame / ID Card Generator
+                    PFP Frame
                   </h4>
                   <p className="font-mono text-[11px] text-[#475569] leading-relaxed">
-                    Generate PFP frame overlay with Goa sunrise graphics for X  
+                    Stick your PFP on a Goa sunrise frame. Post it to X.
                   </p>
 
                   <div className="pt-1">
@@ -363,13 +377,12 @@ export default function App() {
                         e.stopPropagation();
                         openStudio('pfp');
                       }}
-                      className={`font-serif text-[11px] font-bold px-4 py-2 rounded-full uppercase tracking-wider transition-all duration-200 cursor-pointer shadow-md flex items-center justify-center gap-1.5 mx-auto ${isStudioOpen && mode === 'pfp'
+                      className={`font-display text-[11px] font-bold px-4 py-2 rounded-full uppercase tracking-wider transition-all duration-200 cursor-pointer shadow-md flex items-center justify-center gap-1.5 mx-auto ${isStudioOpen && mode === 'pfp'
                           ? 'bg-[#ff2d75] text-white shadow-[#ff2d75]/40 scale-105'
                           : 'bg-[#facc15] text-[#08140e] hover:bg-[#ff2d75] hover:text-white'
                         }`}
                     >
-                      <span>{isStudioOpen && mode === 'pfp' ? 'PFP STUDIO ACTIVE' : 'OPEN PFP FRAME STUDIO'}</span>
-                      <Sparkles className="w-3 h-3" />
+                      {isStudioOpen && mode === 'pfp' ? 'FRAME ON' : 'FRAME IT'}
                     </button>
                   </div>
 
@@ -382,7 +395,7 @@ export default function App() {
               {/* Card 2: Builder Badge ID */}
               <div
                 onClick={() => openStudio('card')}
-                className={`group relative bg-[#fffdf0] text-[#1c1917] p-4 sm:p-5 rounded-xl shadow-xl transition-all duration-300 cursor-pointer border-2 ${isStudioOpen && mode === 'card'
+                className={`group relative bg-[#fffdf0] text-[#1c1917] p-4 sm:p-5 rounded-xl shadow-xl transition-all duration-300 cursor-pointer border-2 sm:rotate-1 sm:translate-y-3 ${isStudioOpen && mode === 'card'
                     ? 'border-[#ff2d75] ring-4 ring-[#ff2d75]/30'
                     : 'border-[#e2e8f0] hover:border-[#facc15]'
                   }`}
@@ -402,10 +415,10 @@ export default function App() {
 
                 <div className="text-center pt-2 space-y-2">
                   <h4 className="font-mono text-sm sm:text-base font-bold leading-snug text-[#0f172a]">
-                     Floating Card
+                    3D Builder ID
                   </h4>
                   <p className="font-mono text-[11px] text-[#475569] leading-relaxed">
-                    Generate the ID Card First, Then Try this For Better Experience.
+                    Finish your ID, drop it on the card, spin it in 3D.
                   </p>
 
                   <div className="pt-1">
@@ -414,13 +427,12 @@ export default function App() {
                         e.stopPropagation();
                         openStudio('card');
                       }}
-                      className={`font-serif text-[11px] font-bold px-4 py-2 rounded-full uppercase tracking-wider transition-all duration-200 cursor-pointer shadow-md flex items-center justify-center gap-1.5 mx-auto ${isStudioOpen && mode === 'card'
+                      className={`font-display text-[11px] font-bold px-4 py-2 rounded-full uppercase tracking-wider transition-all duration-200 cursor-pointer shadow-md flex items-center justify-center gap-1.5 mx-auto ${isStudioOpen && mode === 'card'
                           ? 'bg-[#ff2d75] text-white shadow-[#ff2d75]/40 scale-105'
                           : 'bg-[#facc15] text-[#08140e] hover:bg-[#ff2d75] hover:text-white'
                         }`}
                     >
-                      <span>{isStudioOpen && mode === 'card' ? 'BUILDER ID ACTIVE' : 'Get Floating Card'}</span>
-                      <Sparkles className="w-3 h-3" />
+                      {isStudioOpen && mode === 'card' ? 'ID ON' : 'GET THE CARD'}
                     </button>
                   </div>
 

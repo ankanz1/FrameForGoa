@@ -12,16 +12,16 @@
   --hh-white: #ffffff;
   --hh-ink-muted: #5c6b60;
 
-  --font-display: "Playfair Display", Georgia, serif;
-  --font-heading: "Poppins", "DM Sans", system-ui, sans-serif;
-  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
-  --font-body: "Inter", system-ui, sans-serif;
+  --font-display: "Archivo Black", Georgia, serif;
+  --font-heading: "Space Grotesk", system-ui, sans-serif;
+  --font-mono: "Space Mono", ui-monospace, monospace;
+  --font-body: "Space Grotesk", system-ui, sans-serif;
 }
 
 @theme {
-  --font-display: "Playfair Display", Georgia, serif;
-  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
-  --font-sans: "Inter", system-ui, sans-serif;
+  --font-display: "Archivo Black", Georgia, serif;
+  --font-mono: "Space Mono", ui-monospace, monospace;
+  --font-sans: "Space Grotesk", system-ui, sans-serif;
 }
 
 @layer utilities {
