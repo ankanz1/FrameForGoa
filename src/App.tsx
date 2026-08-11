@@ -316,7 +316,7 @@ export default function App() {
                 </div>
               </div>
 
-              <div className="mt-12 font-playfair text-2xl sm:text-4xl text-[#fef6e4] italic font-bold tracking-wide drop-shadow-lg animate-pulse">
+              <div className="mt-10 font-mono text-xl sm:text-2xl text-[#fef6e4] tracking-wide drop-shadow-lg">
                 Goa Wale Beach Peee🤘
               </div>
             </div>

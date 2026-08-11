@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Timer, MapPin, Calendar, Sun } from 'lucide-react';
+import { MapPin, Calendar } from 'lucide-react';
 
 export function CountdownTimer() {
   const [timeLeft, setTimeLeft] = useState({
@@ -44,7 +44,6 @@ export function CountdownTimer() {
           
           <div className="text-center md:text-left space-y-2 flex-1">
             <div className="inline-flex items-center gap-2 bg-[#063b20] px-3 py-1 rounded-full border border-[#1b3d2c] mb-2">
-              <Sun className="w-4 h-4 text-[#f6c81a]" />
               <span className="font-mono text-xs font-bold text-[#f6c81a] uppercase tracking-wider">The Countdown Begins</span>
             </div>
             <h3 className="font-playfair text-3xl sm:text-4xl font-bold text-[#fef6e4]">
